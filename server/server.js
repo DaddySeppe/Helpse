@@ -16,15 +16,51 @@ const {
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const defaultClientOrigins = [
+  "http://localhost:5173",
+  "https://helpse.be",
+  "https://www.helpse.be",
+];
+
+const allowedOrigins = [
+  ...(process.env.CLIENT_URL || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+  ...defaultClientOrigins,
+]
+  .map((origin) => origin.replace(/\/$/, ""))
+  .filter((origin, index, origins) => origins.indexOf(origin) === index);
+
+const allowedOriginHosts = new Set(
+  allowedOrigins
+    .map((origin) => {
+      try {
+        return new URL(origin).host;
+      } catch {
+        return "";
+      }
+    })
+    .filter(Boolean),
+);
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+
+  const normalizedOrigin = origin.replace(/\/$/, "");
+  if (allowedOrigins.includes(normalizedOrigin)) return true;
+
+  try {
+    return allowedOriginHosts.has(new URL(origin).host);
+  } catch {
+    return false;
+  }
+}
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
