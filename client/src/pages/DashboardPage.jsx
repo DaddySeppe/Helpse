@@ -97,30 +97,30 @@ export default function DashboardPage() {
 function DashboardHero({ user, access, overview }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-brand-200 bg-white shadow-sm">
-      <div className="grid gap-0 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-0 lg:grid-cols-[1fr_360px]">
         <div className="bg-brand-900 p-6 text-white md:p-8">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black uppercase tracking-wide text-brand-100">
-              {user.role === "CUSTOMER" ? "Taakgever" : "Student"}
+            <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-black text-brand-100">
+              {user.role === "CUSTOMER" ? "Ik zoek hulp" : "Ik wil helpen"}
             </span>
-            <span className="rounded-full bg-accent-100 px-3 py-1 text-xs font-black text-accent-600">
+            <span className="rounded-full bg-accent-100 px-4 py-2 text-sm font-black text-accent-600">
               {statusLabel(user.subscription_status)}
             </span>
           </div>
-          <h1 className="mt-4 text-3xl font-black md:text-4xl">Welkom, {user.name}</h1>
-          <p className="mt-3 max-w-2xl text-brand-100">
+          <h1 className="mt-5 font-sans text-3xl font-black md:text-5xl">Dag {user.name}</h1>
+          <p className="mt-4 max-w-2xl text-xl font-semibold leading-relaxed text-brand-100">
             {user.role === "CUSTOMER"
-              ? "Beheer je hulpvragen, bekijk kandidaten en zie meteen welke taak aandacht nodig heeft."
-              : "Vind lokale jobs, volg je reacties en hou toegewezen werk overzichtelijk bij."}
+              ? "Hier staat alles wat je vandaag moet weten: je taken, kandidaten en volgende stap."
+              : "Hier staat alles wat je vandaag moet weten: nieuwe jobs, je reacties en je planning."}
           </p>
         </div>
 
         <div className="border-t border-brand-100 bg-brand-50 p-6 lg:border-l lg:border-t-0">
-          <p className="text-sm font-black uppercase tracking-wide text-brand-600">Toegang</p>
-          <p className="mt-2 text-2xl font-black text-brand-950">
-            {access.mustPay ? "Actie vereist" : "In orde"}
+          <p className="text-base font-black text-brand-700">Je toegang</p>
+          <p className="mt-2 text-3xl font-black text-brand-950">
+            {access.mustPay ? "Betaling nodig" : "Alles in orde"}
           </p>
-          <p className="mt-2 text-sm font-semibold text-brand-700">
+          <p className="mt-2 text-base font-semibold text-brand-700">
             {user.subscription_status === "TRIAL"
               ? `${getRemainingTrialTime(user.trial_ends_at)} trial resterend`
               : access.mustPay
@@ -154,21 +154,48 @@ function CustomerDashboard({ access, tasks, applications, pendingApplications, o
     <section className="mt-6 space-y-6">
       <NextStepCard nextStep={nextStep} />
 
+      <SimpleGuide role="CUSTOMER" />
+
+      <section className="rounded-2xl border border-brand-200 bg-white p-5 shadow-sm">
+        <h2 className="font-sans text-2xl font-black text-brand-950">Wat wil je doen?</h2>
+        <p className="mt-1 text-lg font-semibold text-brand-600">Kies gewoon een van deze grote knoppen.</p>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <BigAction
+            title="Nieuwe taak plaatsen"
+            text="Vraag hulp voor een klus"
+            to="/tasks/new"
+            disabled={!access.canCreateTask}
+            variant="primary"
+          />
+          <BigAction
+            title="Kandidaten bekijken"
+            text={pendingApplications.length === 1 ? "1 persoon wacht" : `${pendingApplications.length} personen wachten`}
+            to="/applications"
+            variant="accent"
+          />
+          <BigAction title="Mijn taken bekijken" text={`${tasks.length} taken in totaal`} to="/my-tasks" />
+        </div>
+      </section>
+
       <div className="grid gap-3 md:grid-cols-4">
-        <WorkflowItem label="Open" value={openTasks.length} text="zichtbaar" tone="green" />
-        <WorkflowItem label="Kandidaten" value={pendingApplications.length} text="te kiezen" tone="amber" />
-        <WorkflowItem label="Toegewezen" value={assignedTasks.length} text="bezig" tone="blue" />
+        <WorkflowItem label="Open taken" value={openTasks.length} text="studenten kunnen reageren" tone="green" />
+        <WorkflowItem label="Te kiezen" value={pendingApplications.length} text="kandidaten wachten" tone="amber" />
+        <WorkflowItem label="Bezig" value={assignedTasks.length} text="iemand is gekozen" tone="blue" />
         <WorkflowItem label="Klaar" value={completedTasks.length} text="afgerond" tone="slate" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
         <Panel
-          title="Taken beheren"
-          subtitle="Je geplaatste hulpvragen met status, datum, budget en kandidaten."
+          title="Jouw taken"
+          subtitle="Elke taak staat op een aparte lijn. Met Beheren bekijk je kandidaten."
           action={
-            <Link to="/tasks/new">
-              <Button disabled={!access.canCreateTask}>Nieuwe taak</Button>
-            </Link>
+            access.canCreateTask ? (
+              <Link to="/tasks/new">
+                <Button>Nieuwe taak</Button>
+              </Link>
+            ) : (
+              <Button disabled>Nieuwe taak</Button>
+            )
           }
         >
           {sortedTasks.length === 0 ? (
@@ -187,7 +214,7 @@ function CustomerDashboard({ access, tasks, applications, pendingApplications, o
         </Panel>
 
         <aside className="space-y-6">
-          <Panel title="Kandidaten" subtitle="Nieuwe reacties die jouw keuze nodig hebben.">
+          <Panel title="Kandidaten" subtitle="Mensen die willen helpen met jouw taken.">
             {access.mustPay ? (
               <PayNotice />
             ) : pendingApplications.length > 0 ? (
@@ -201,7 +228,7 @@ function CustomerDashboard({ access, tasks, applications, pendingApplications, o
             )}
           </Panel>
 
-          <Panel title="Planning" subtitle="Eerstvolgende taken op datum.">
+          <Panel title="Planning" subtitle="Taken die binnenkort gepland staan.">
             {upcomingTasks.length === 0 ? (
               <SmallEmpty text="Geen geplande taken." />
             ) : (
@@ -224,6 +251,28 @@ function StudentDashboard({ access, openTasks, applications, acceptedApplication
   return (
     <section className="mt-6 space-y-6">
       <NextStepCard nextStep={nextStep} />
+
+      <SimpleGuide role="STUDENT" />
+
+      <section className="rounded-2xl border border-brand-200 bg-white p-5 shadow-sm">
+        <h2 className="font-sans text-2xl font-black text-brand-950">Wat wil je doen?</h2>
+        <p className="mt-1 text-lg font-semibold text-brand-600">Kies gewoon een van deze grote knoppen.</p>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <BigAction
+            title="Taken zoeken"
+            text="Bekijk jobs in je buurt."
+            to="/tasks"
+            variant="primary"
+          />
+          <BigAction
+            title="Mijn reacties"
+            text={`${applications.length} reacties`}
+            to="/applications"
+            variant="accent"
+          />
+          <BigAction title="Mijn werk" text={`${assignedTasks.length} toegewezen`} to="/my-tasks" />
+        </div>
+      </section>
 
       <div className="grid gap-3 md:grid-cols-3">
         <WorkflowItem label="Open jobs" value={openTasks.length} text="beschikbaar" tone="green" />
@@ -287,15 +336,15 @@ function StudentDashboard({ access, openTasks, applications, acceptedApplication
 
 function NextStepCard({ nextStep }) {
   return (
-    <section className="rounded-2xl border border-brand-200 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border-2 border-accent-100 bg-white p-6 shadow-sm">
       <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
         <div>
-          <p className="text-sm font-black uppercase tracking-wide text-accent-600">Volgende stap</p>
-          <h2 className="mt-1 text-2xl font-black text-brand-950">{nextStep.title}</h2>
-          <p className="mt-2 max-w-2xl text-brand-700">{nextStep.text}</p>
+          <p className="text-base font-black text-accent-600">Belangrijkste volgende stap</p>
+          <h2 className="mt-2 font-sans text-3xl font-black text-brand-950">{nextStep.title}</h2>
+          <p className="mt-2 max-w-2xl text-lg text-brand-700">{nextStep.text}</p>
         </div>
         <Link to={nextStep.to}>
-          <Button className="w-full px-6 py-4 md:w-auto" variant={nextStep.variant}>
+          <Button className="w-full px-7 py-5 text-lg md:w-auto" variant={nextStep.variant}>
             {nextStep.action}
           </Button>
         </Link>
@@ -304,13 +353,49 @@ function NextStepCard({ nextStep }) {
   );
 }
 
-function Panel({ title, subtitle, action, children }) {
+function SimpleGuide({ role }) {
+  const steps =
+    role === "CUSTOMER"
+      ? [
+          ["1", "Plaats een taak", "Vertel kort welke hulp je nodig hebt."],
+          ["2", "Bekijk kandidaten", "Kies rustig wie jou mag helpen."],
+          ["3", "Volg alles op", "Datum, budget en status staan hier samen."],
+        ]
+      : [
+          ["1", "Zoek een taak", "Kies een job die bij jou past."],
+          ["2", "Reageer duidelijk", "Stuur een kort bericht naar de taakgever."],
+          ["3", "Volg je planning", "Als je gekozen bent, staat de job hier klaar."],
+        ];
+
   return (
     <section className="rounded-2xl border border-brand-200 bg-white p-5 shadow-sm">
+      <h2 className="font-sans text-2xl font-black text-brand-950">Hoe werkt dit?</h2>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {steps.map(([number, title, text]) => (
+          <article key={number} className="rounded-xl border border-brand-100 bg-brand-50 p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-700 text-lg font-black text-white">
+                {number}
+              </span>
+              <div>
+                <h3 className="font-sans text-lg font-black text-brand-950">{title}</h3>
+                <p className="mt-1 text-base font-semibold leading-relaxed text-brand-700">{text}</p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Panel({ title, subtitle, action, children }) {
+  return (
+    <section className="rounded-2xl border border-brand-200 bg-white p-6 shadow-sm">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-brand-950">{title}</h2>
-          {subtitle ? <p className="mt-1 text-sm font-semibold text-brand-600">{subtitle}</p> : null}
+          <h2 className="font-sans text-2xl font-black text-brand-950">{title}</h2>
+          {subtitle ? <p className="mt-2 text-base font-semibold text-brand-600">{subtitle}</p> : null}
         </div>
         {action}
       </div>
@@ -319,16 +404,41 @@ function Panel({ title, subtitle, action, children }) {
   );
 }
 
+function BigAction({ title, text, to, variant = "secondary", disabled = false }) {
+  const content = (
+    <article
+      className={`h-full rounded-2xl border-2 p-5 shadow-sm transition ${
+        disabled
+          ? "border-slate-200 bg-slate-100 text-slate-500"
+          : variant === "primary"
+            ? "border-brand-700 bg-brand-700 text-white"
+            : variant === "accent"
+              ? "border-accent-500 bg-accent-100 text-brand-950"
+              : "border-brand-200 bg-white text-brand-950 hover:border-brand-300 hover:bg-brand-50"
+      }`}
+    >
+      <h3 className="font-sans text-xl font-black">{title}</h3>
+      <p className={`mt-2 text-base font-semibold ${variant === "primary" && !disabled ? "text-brand-100" : "text-brand-700"}`}>
+        {disabled ? "Eerst Premium activeren" : text}
+      </p>
+    </article>
+  );
+
+  if (disabled) return content;
+
+  return <Link to={to}>{content}</Link>;
+}
+
 function CandidateRow({ application }) {
   return (
     <Link
       to={application.task_id ? `/tasks/${application.task_id}/applications` : "/applications"}
-      className="block rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 hover:border-amber-300"
+      className="block rounded-xl border-2 border-amber-200 bg-amber-50 px-5 py-4 hover:border-amber-300"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-black text-brand-950">{application.tasks?.title || "Nieuwe kandidaat"}</p>
-          <p className="mt-1 text-sm font-semibold text-amber-800">Wacht op jouw keuze</p>
+          <p className="font-sans text-lg font-black text-brand-950">{application.tasks?.title || "Nieuwe kandidaat"}</p>
+          <p className="mt-1 font-semibold text-amber-800">Wacht op jouw keuze</p>
         </div>
         <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-amber-800">
           Bekijken
@@ -357,14 +467,14 @@ function PayNotice() {
 
 function CustomerTaskRow({ task, candidateCount }) {
   return (
-    <article className="border-b border-brand-100 bg-white p-4 last:border-b-0 hover:bg-brand-50/60">
-      <div className="grid gap-4 md:grid-cols-[1fr_120px_150px_170px] md:items-center">
+    <article className="border-b border-brand-100 bg-white p-5 last:border-b-0 hover:bg-brand-50/60">
+      <div className="grid gap-4 lg:grid-cols-[1fr_140px_170px_190px] lg:items-center">
         <div className="min-w-0">
-          <h3 className="truncate text-lg font-black text-brand-950">{task.title}</h3>
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm font-semibold text-brand-600">
-            <span>{task.location}</span>
-            <span>{date(task.task_date)}</span>
-            <span>{euro(task.price)}</span>
+          <h3 className="font-sans text-xl font-black text-brand-950">{task.title}</h3>
+          <div className="mt-3 grid gap-2 text-base font-semibold text-brand-700 sm:grid-cols-3">
+            <span>Locatie: {task.location}</span>
+            <span>Datum: {date(task.task_date)}</span>
+            <span>Budget: {euro(task.price)}</span>
           </div>
         </div>
 
@@ -380,13 +490,13 @@ function CustomerTaskRow({ task, candidateCount }) {
         </Link>
 
         <div className="flex flex-wrap gap-2 md:justify-end">
-          <Link to={`/tasks/${task.id}`}>
-            <Button variant="secondary" className="px-4 py-2 text-sm">
+          <Link to={`/tasks/${task.id}`} className="flex-1 md:flex-none">
+            <Button variant="secondary" className="w-full px-5 py-3">
               Details
             </Button>
           </Link>
-          <Link to={`/tasks/${task.id}/applications`}>
-            <Button className="px-4 py-2 text-sm">Beheren</Button>
+          <Link to={`/tasks/${task.id}/applications`} className="flex-1 md:flex-none">
+            <Button className="w-full px-5 py-3">Beheren</Button>
           </Link>
         </div>
       </div>
@@ -403,19 +513,19 @@ function WorkflowItem({ label, value, text, tone }) {
   };
 
   return (
-    <article className={`rounded-xl border p-4 shadow-sm ${tones[tone] || tones.blue}`}>
-      <p className="text-3xl font-black">{value}</p>
-      <h3 className="mt-1 font-black text-brand-950">{label}</h3>
-      <p className="mt-1 text-sm font-semibold opacity-80">{text}</p>
+    <article className={`rounded-2xl border p-5 shadow-sm ${tones[tone] || tones.blue}`}>
+      <p className="text-4xl font-black">{value}</p>
+      <h3 className="mt-2 font-sans text-lg font-black text-brand-950">{label}</h3>
+      <p className="mt-1 font-semibold opacity-80">{text}</p>
     </article>
   );
 }
 
 function MiniMetric({ label, value }) {
   return (
-    <div className="rounded-xl bg-white p-3 ring-1 ring-brand-100">
+    <div className="rounded-xl bg-white p-4 ring-1 ring-brand-100">
       <p className="text-2xl font-black text-brand-950">{value}</p>
-      <p className="text-xs font-bold uppercase tracking-wide text-brand-500">{label}</p>
+      <p className="text-sm font-bold text-brand-500">{label}</p>
     </div>
   );
 }
@@ -426,7 +536,7 @@ function buildOverview({ user, access, tasks, applications, assignedTasks }) {
       { label: "taken", value: tasks.length },
       { label: "kandidaten", value: applications.filter((item) => item.status === "PENDING").length },
       { label: "open", value: tasks.filter((task) => task.status === "OPEN").length },
-      { label: "toegang", value: access.mustPay ? "pay" : "ok" },
+      { label: "toegang", value: access.mustPay ? "betalen" : "ok" },
     ];
   }
 
@@ -446,6 +556,16 @@ function getCustomerNextStep({ access, pendingApplications, tasks, openTasks, as
       action: "Premium activeren",
       to: "/pricing",
       variant: "primary",
+    };
+  }
+
+  if (!access.canCreateTask) {
+    return {
+      title: "Je zit in je gratis kijkperiode",
+      text: "Je kan alles rustig bekijken. Wil je een taak plaatsen of kandidaten beheren? Dan heb je Premium nodig.",
+      action: "Premium bekijken",
+      to: "/pricing",
+      variant: "secondary",
     };
   }
 
@@ -506,6 +626,16 @@ function getStudentNextStep({ access, applications, assignedTasks }) {
       action: "Premium activeren",
       to: "/pricing",
       variant: "primary",
+    };
+  }
+
+  if (!access.canApply) {
+    return {
+      title: "Je zit in je gratis kijkperiode",
+      text: "Je kan taken rustig bekijken. Wil je reageren op een job? Dan heb je Premium nodig.",
+      action: "Premium bekijken",
+      to: "/pricing",
+      variant: "secondary",
     };
   }
 
