@@ -7,8 +7,35 @@ ENV_FILE="${HELPSE_SERVER_ENV:-${SERVER_DIR}/.env}"
 APP_NAME="${HELPSE_PM2_APP_NAME:-helpse-api}"
 PORT="${PORT:-4000}"
 
-if [ ! -d "$SERVER_DIR" ]; then
-  echo "Server directory not found: ${SERVER_DIR}" >&2
+echo "GITHUB_WORKSPACE=${GITHUB_WORKSPACE:-}"
+echo "Initial SERVER_DIR=${SERVER_DIR}"
+echo "Initial ENV_FILE=${ENV_FILE}"
+
+if [ ! -d "$SERVER_DIR" ] || [ ! -f "${SERVER_DIR}/server.js" ]; then
+  echo "Initial server directory is not usable. Searching common deploy locations..."
+
+  for candidate in \
+    "/home/sv/Helpse/server" \
+    "/home/sv/helpse/server" \
+    "/var/www/helpse/server" \
+    "/var/www/Helpse/server" \
+    "/srv/helpse/server" \
+    "/opt/helpse/server"; do
+    if [ -f "${candidate}/server.js" ]; then
+      SERVER_DIR="$candidate"
+      ENV_FILE="${HELPSE_SERVER_ENV:-${SERVER_DIR}/.env}"
+      break
+    fi
+  done
+fi
+
+if [ ! -d "$SERVER_DIR" ] || [ ! -f "${SERVER_DIR}/server.js" ]; then
+  echo "Server directory not found. Checked:" >&2
+  echo "- ${GITHUB_WORKSPACE:-}/server" >&2
+  echo "- /home/sv/Helpse/server" >&2
+  echo "- /home/sv/helpse/server" >&2
+  echo "- /var/www/helpse/server" >&2
+  echo "- /srv/helpse/server" >&2
   exit 1
 fi
 
@@ -26,6 +53,7 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 if [ ! -f "$ENV_FILE" ]; then
+  echo "Searched server dir: ${SERVER_DIR}" >&2
   cat >&2 <<EOF
 Missing backend env file.
 
@@ -43,6 +71,9 @@ STRIPE_WEBHOOK_SECRET=...
 EOF
   exit 1
 fi
+
+echo "Using SERVER_DIR=${SERVER_DIR}"
+echo "Using ENV_FILE=${ENV_FILE}"
 
 set -a
 # shellcheck disable=SC1090
@@ -64,13 +95,19 @@ fi
 cd "$SERVER_DIR"
 npm ci --omit=dev
 
-if npx --yes pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-  npx --yes pm2 restart "$APP_NAME" --update-env
+if command -v pm2 >/dev/null 2>&1; then
+  PM2_BIN="pm2"
 else
-  npx --yes pm2 start server.js --name "$APP_NAME" --update-env
+  PM2_BIN="npx --yes pm2"
 fi
 
-npx --yes pm2 save || true
+if $PM2_BIN describe "$APP_NAME" >/dev/null 2>&1; then
+  $PM2_BIN restart "$APP_NAME" --update-env
+else
+  $PM2_BIN start server.js --name "$APP_NAME" --update-env
+fi
+
+$PM2_BIN save || true
 
 for attempt in 1 2 3 4 5 6 7 8 9 10; do
   if curl -fsS "http://127.0.0.1:${PORT}/api/health"; then
@@ -82,5 +119,5 @@ for attempt in 1 2 3 4 5 6 7 8 9 10; do
 done
 
 echo "Helpse API did not become healthy on port ${PORT}." >&2
-npx --yes pm2 logs "$APP_NAME" --lines 80 --nostream || true
+$PM2_BIN logs "$APP_NAME" --lines 80 --nostream || true
 exit 1
