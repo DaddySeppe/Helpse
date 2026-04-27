@@ -16,6 +16,9 @@ jobs:
       - name: Deploy Helpse
         run: /home/sv/deploy-helpse.sh
 
+      - name: Start or restart API
+        run: bash scripts/start-helpse-api.sh
+
       - name: Configure Nginx API reverse proxy
         run: bash scripts/configure-nginx-helpse.sh
 
