@@ -1,20 +1,28 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
+import { getApiErrorMessage } from "../utils/apiError";
 
 export default function RegisterPage() {
+  const [searchParams] = useSearchParams();
+  const requestedRole = searchParams.get("role");
+  const initialRole = requestedRole === "STUDENT" ? "STUDENT" : "CUSTOMER";
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    role: "CUSTOMER",
+    role: initialRole,
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, loading: authLoading, user } = useAuth();
   const navigate = useNavigate();
+
+  if (!authLoading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -25,7 +33,7 @@ export default function RegisterPage() {
       await register(form);
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Registratie mislukt.");
+      setError(getApiErrorMessage(err, "Registratie mislukt."));
     } finally {
       setLoading(false);
     }

@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
+import { getApiErrorMessage } from "../utils/apiError";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loading: authLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  if (!authLoading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -21,7 +26,7 @@ export default function LoginPage() {
       await login(form);
       navigate(location.state?.from || "/dashboard", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Inloggen mislukt.");
+      setError(getApiErrorMessage(err, "Inloggen mislukt."));
     } finally {
       setLoading(false);
     }

@@ -1,14 +1,16 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "./Button";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const isLanding = location.pathname === "/";
 
   return (
     <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-        <Link to="/" className="text-2xl font-black tracking-tight text-brand-900">
+        <Link to={user ? "/dashboard" : "/"} className="text-2xl font-black tracking-tight text-brand-900">
           HELPSE
         </Link>
 
@@ -18,9 +20,11 @@ export default function Navbar() {
               <NavLink to="/dashboard" className="nav-link">
                 Dashboard
               </NavLink>
-              <NavLink to="/tasks" className="nav-link">
-                Taken
-              </NavLink>
+              {["STUDENT", "ADMIN"].includes(user.role) ? (
+                <NavLink to="/tasks" className="nav-link">
+                  Taken
+                </NavLink>
+              ) : null}
               <NavLink to="/my-tasks" className="nav-link">
                 Mijn taken
               </NavLink>
@@ -31,7 +35,7 @@ export default function Navbar() {
                 Pricing
               </NavLink>
             </>
-          ) : (
+          ) : isLanding ? null : (
             <>
               <NavLink to="/login" className="nav-link">
                 Login
@@ -48,8 +52,8 @@ export default function Navbar() {
             Uitloggen
           </Button>
         ) : (
-          <Link to="/login">
-            <Button>Start nu</Button>
+          <Link to="/register">
+            <Button>Start gratis</Button>
           </Link>
         )}
       </div>

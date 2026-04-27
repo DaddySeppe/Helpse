@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import api from "../api/axios";
 import EmptyState from "../components/EmptyState";
 import LoadingSpinner from "../components/LoadingSpinner";
 import TaskCard from "../components/TaskCard";
+import { useAuth } from "../context/AuthContext";
 
 export default function TasksPage() {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,6 +23,10 @@ export default function TasksPage() {
 
     loadTasks();
   }, []);
+
+  if (user.role === "CUSTOMER") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   if (loading) return <LoadingSpinner />;
 
