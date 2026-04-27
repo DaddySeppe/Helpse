@@ -3,13 +3,13 @@ set -euo pipefail
 
 ROOT_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 SERVER_DIR="${HELPSE_SERVER_DIR:-${ROOT_DIR}/server}"
-ENV_FILE="${HELPSE_SERVER_ENV:-${SERVER_DIR}/.env}"
+ENV_FILE="${HELPSE_SERVER_ENV:-}"
 APP_NAME="${HELPSE_PM2_APP_NAME:-helpse-api}"
 PORT="${PORT:-4000}"
 
 echo "GITHUB_WORKSPACE=${GITHUB_WORKSPACE:-}"
 echo "Initial SERVER_DIR=${SERVER_DIR}"
-echo "Initial ENV_FILE=${ENV_FILE}"
+echo "Initial ENV_FILE=${ENV_FILE:-auto}"
 
 if [ ! -d "$SERVER_DIR" ] || [ ! -f "${SERVER_DIR}/server.js" ]; then
   echo "Initial server directory is not usable. Searching common deploy locations..."
@@ -23,7 +23,6 @@ if [ ! -d "$SERVER_DIR" ] || [ ! -f "${SERVER_DIR}/server.js" ]; then
     "/opt/helpse/server"; do
     if [ -f "${candidate}/server.js" ]; then
       SERVER_DIR="$candidate"
-      ENV_FILE="${HELPSE_SERVER_ENV:-${SERVER_DIR}/.env}"
       break
     fi
   done
@@ -39,10 +38,11 @@ if [ ! -d "$SERVER_DIR" ] || [ ! -f "${SERVER_DIR}/server.js" ]; then
   exit 1
 fi
 
-if [ ! -f "$ENV_FILE" ]; then
+if [ -z "$ENV_FILE" ]; then
   for candidate in \
     "/home/sv/helpse-server.env" \
-    "/home/sv/helpse/.env" \
+    "${SERVER_DIR}/.env" \
+    "/home/sv/site/helpse/Helpse/server/.env" \
     "/home/sv/helpse/server/.env" \
     "/home/sv/Helpse/server/.env"; do
     if [ -f "$candidate" ]; then
@@ -52,14 +52,13 @@ if [ ! -f "$ENV_FILE" ]; then
   done
 fi
 
-if [ ! -f "$ENV_FILE" ]; then
+if [ -z "$ENV_FILE" ] || [ ! -f "$ENV_FILE" ]; then
   echo "Searched server dir: ${SERVER_DIR}" >&2
   cat >&2 <<EOF
 Missing backend env file.
 
-Create one of these files on the homeserver:
-- ${SERVER_DIR}/.env
-- /home/sv/helpse-server.env
+Create this file on the homeserver:
+/home/sv/helpse-server.env
 
 It must contain at least:
 CLIENT_URL=https://helpse.be
