@@ -10,5 +10,14 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Deploy Helpse
         run: /home/sv/deploy-helpse.sh
+
+      - name: Configure Nginx API reverse proxy
+        run: bash scripts/configure-nginx-helpse.sh
+
+      - name: Verify public API
+        run: curl -fsS https://helpse.be/api/health
