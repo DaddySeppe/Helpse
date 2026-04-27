@@ -1,3 +1,4 @@
+require("node:dns").setDefaultResultOrder("ipv4first");
 require("dotenv").config();
 
 const express = require("express");
@@ -91,7 +92,8 @@ app.use("/api/payments", paymentsRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const PORT = Number(process.env.PORT || 4000);
+const parsedPort = Number(process.env.PORT || 4000);
+const PORT = Number.isInteger(parsedPort) && parsedPort > 0 ? parsedPort : 4000;
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Helpse API draait op poort ${PORT}`);

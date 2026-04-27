@@ -80,6 +80,8 @@ set -a
 . "$ENV_FILE"
 set +a
 
+export NODE_OPTIONS="${NODE_OPTIONS:---dns-result-order=ipv4first}"
+
 missing=0
 for name in CLIENT_URL JWT_SECRET SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET; do
   if [ -z "${!name:-}" ]; then
