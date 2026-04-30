@@ -8,10 +8,15 @@ export default function Navbar() {
   const isLanding = location.pathname === "/";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-brand-100/80 bg-white/92 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-        <Link to={user ? "/dashboard" : "/"} className="text-2xl font-black tracking-tight text-brand-900">
-          HELPSE
+        <Link to={user ? "/dashboard" : "/"} className="group inline-flex items-center gap-2">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-900 text-xs font-black text-white">
+            H
+          </span>
+          <span className="text-2xl font-black tracking-tight text-brand-900 transition group-hover:text-brand-700">
+            HELPSE
+          </span>
         </Link>
 
         <nav className="hidden gap-4 md:flex">

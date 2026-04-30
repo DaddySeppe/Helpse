@@ -18,7 +18,7 @@ import TasksPage from "./pages/TasksPage";
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
