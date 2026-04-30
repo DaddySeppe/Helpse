@@ -8,27 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-    defaults:
-      run:
-        shell: bash
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
       - name: Deploy Helpse
-        run: |
-          if [ -x /home/sv/deploy-helpse.sh ]; then
-            /home/sv/deploy-helpse.sh
-          else
-            echo "No /home/sv/deploy-helpse.sh found; continuing with checked-out workspace."
-          fi
-
-      - name: Start or restart API
-        run: bash scripts/start-helpse-api.sh
-
-      - name: Configure Nginx API reverse proxy
-        run: bash scripts/configure-nginx-helpse.sh
-
-      - name: Verify public API
-        run: curl -fsS https://helpse.be/api/health
+        run: /home/sv/deploy-helpse.sh
