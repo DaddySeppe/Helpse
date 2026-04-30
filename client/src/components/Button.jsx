@@ -8,9 +8,9 @@ export default function Button({
     "inline-flex items-center justify-center rounded-xl px-5 py-3 text-base font-semibold shadow-sm transition duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
 
   const variants = {
-    primary: "bg-brand-700 text-white hover:bg-brand-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300",
-    secondary: "border border-brand-200 bg-white text-brand-900 hover:bg-brand-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200",
-    accent: "bg-accent-500 text-brand-950 hover:bg-accent-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-100",
+    primary: "bg-[color:var(--brand-700)] text-white hover:bg-[color:var(--brand-800)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(59,92,150,0.18)]",
+    secondary: "border border-[color:var(--brand-200)] bg-white text-[color:var(--brand-900)] hover:bg-[color:var(--brand-50)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(59,92,150,0.08)]",
+    accent: "bg-[color:var(--accent-500)] text-[color:var(--brand-900)] hover:bg-[color:var(--accent-600)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:rgba(71,191,115,0.12)]",
     danger: "bg-red-600 text-white hover:bg-red-700",
   };
 

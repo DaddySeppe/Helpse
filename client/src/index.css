@@ -1,6 +1,36 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap");
 @import "tailwindcss";
 
+/* Design tokens */
+:root {
+  --brand-50: #ecf3ff;
+  --brand-100: #dbe9ff;
+  --brand-200: #c3dbff;
+  --brand-300: #9ebdf0;
+  --brand-500: #3b5c96;
+  --brand-600: #274677;
+  --brand-700: #123564;
+  --brand-900: #0f1e3d;
+  --accent-500: #47bf73;
+  --accent-600: #2e9657;
+
+  --text-900: #0f1e3d;
+  --muted-700: #274677;
+
+  --container-max: 72rem; /* 1152px */
+
+  --radius-lg: 14px;
+  --radius-md: 10px;
+
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+
+  --fw-regular: 400;
+  --fw-medium: 600;
+  --fw-bold: 800;
+}
+
 @theme {
   --color-brand-50: #ecf3ff;
   --color-brand-100: #d3e1ff;
@@ -23,9 +53,11 @@
 
 body {
   margin: 0;
-  font-family: "Manrope", sans-serif;
-  color: #0f1e3d;
+  font-family: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: var(--text-900);
   background: linear-gradient(180deg, #f7fbff 0%, #eff4fb 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .landing-page {
@@ -51,6 +83,17 @@ h3 {
   font-family: "Fraunces", serif;
   letter-spacing: -0.02em;
 }
+
+/* typographic scale */
+h1 { font-size: clamp(2rem, 3.4vw, 3.75rem); line-height: 1.04; }
+h2 { font-size: clamp(1.5rem, 2.6vw, 2.5rem); line-height: 1.12; }
+h3 { font-size: clamp(1.25rem, 1.8vw, 1.5rem); }
+p, li { font-size: 1rem; line-height: 1.6; }
+
+/* container utility */
+.container-page, .max-w-6xl { max-width: var(--container-max); margin-left: auto; margin-right: auto; }
+
+.landing-surface { border-radius: var(--radius-lg); }
 
 .landing-surface {
   border: 1px solid rgba(125, 160, 218, 0.42);

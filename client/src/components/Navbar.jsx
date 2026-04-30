@@ -57,9 +57,14 @@ export default function Navbar() {
             Uitloggen
           </Button>
         ) : (
-          <Link to="/register">
-            <Button>Start gratis</Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/login" className="hidden md:inline">
+              <span className="nav-link">Inloggen</span>
+            </Link>
+            <Link to="/register">
+              <Button variant="accent" className="shadow-md">Start gratis</Button>
+            </Link>
+          </div>
         )}
       </div>
     </header>
