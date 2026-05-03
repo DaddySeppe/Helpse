@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
+
 ROOT_DIR="${GITHUB_WORKSPACE:-$(pwd)}"
 SERVER_DIR="${HELPSE_SERVER_DIR:-${ROOT_DIR}/server}"
 ENV_FILE="${HELPSE_SERVER_ENV:-}"
