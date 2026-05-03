@@ -7,12 +7,12 @@ export default function SubscriptionBanner({ status, onGoPricing }) {
   const message = status === "TRIAL" ? trialMessage : expiredMessage;
   const tone =
     status === "TRIAL"
-      ? "border-amber-200 bg-amber-50 text-amber-800"
-      : "border-red-200 bg-red-50 text-red-800";
+      ? "border-slate-200 bg-slate-50 text-slate-700"
+      : "border-slate-200 bg-slate-50 text-slate-700";
 
   return (
-    <div className={`mb-6 rounded-2xl border px-4 py-4 md:flex md:items-center md:justify-between ${tone}`}>
-      <p className="font-medium">{message}</p>
+    <div className={`mb-6 rounded-[22px] border px-4 py-4 shadow-sm md:flex md:items-center md:justify-between ${tone}`}>
+      <p className="font-medium leading-relaxed">{message}</p>
       <Button className="mt-3 md:mt-0" variant="secondary" onClick={onGoPricing}>
         Bekijk pricing
       </Button>
