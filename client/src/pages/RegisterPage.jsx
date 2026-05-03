@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
 import { getApiErrorMessage } from "../utils/apiError";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [errorFields, setErrorFields] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register, loading: authLoading, user } = useAuth();
   const navigate = useNavigate();
 
@@ -94,22 +97,50 @@ function findErrorFields(message) {
             onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
             required
           />
-          <Input
-            label={makeLabel("Wachtwoord", "password")}
-            type="password"
-            value={form.password}
-            onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
-            required
-            minLength={8}
-          />
-          <Input
-            label={makeLabel("Herhaal Wachtwoord", "confirmPassword")}
-            type="password"
-            value={form.confirmPassword}
-            onChange={(event) => setForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
-            required
-            minLength={8}
-          />
+
+          <div className="relative">
+            <Input
+              label={makeLabel("Wachtwoord", "password")}
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
+              required
+              minLength={8}
+              className="pr-12"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-4 bottom-3 text-brand-500 hover:text-brand-900"
+              aria-label={showPassword ? "Wachtwoord verbergen" : "Wachtwoord tonen"}
+            >
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+          </div>
+
+          <div className="relative">
+            <Input
+              label={makeLabel("Herhaal Wachtwoord", "confirmPassword")}
+              type={showConfirmPassword ? "text" : "password"}
+              value={form.confirmPassword}
+              onChange={(event) => setForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+              required
+              minLength={8}
+              className="pr-12"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute right-4 bottom-3 text-brand-500 hover:text-brand-900"
+              aria-label={
+                showConfirmPassword ? "Wachtwoord verbergen" : "Wachtwoord tonen"
+              }
+            >
+              {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+          </div>
 
           <label className="block space-y-2">
             <span className="text-sm font-semibold text-brand-900">Ik ben een</span>
