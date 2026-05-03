@@ -4,7 +4,7 @@ import Button from "../components/Button";
 export default function LandingPage() {
   const values = [
     "Voor wie hulp zoekt",
-    "Voor wie wil helpen",
+    "Hulp door studenten",
     "Duidelijke afspraken",
   ];
 
@@ -30,7 +30,7 @@ export default function LandingPage() {
     },
     {
       title: "Krijg reacties",
-      text: "Helpers uit de buurt kunnen reageren.",
+      text: "Studenten uit de buurt kunnen reageren.",
     },
     {
       title: "Maak een afspraak",
@@ -47,8 +47,8 @@ export default function LandingPage() {
             Hulp zoeken of hulp aanbieden in je buurt
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-brand-700 sm:text-xl">
-            Op Helpse kan je een hulpvraag plaatsen. Helpers uit de buurt kunnen reageren, waarna
-            je samen een afspraak maakt.
+            Helpse brengt mensen met een hulpvraag in contact met studenten uit de buurt. Hulp
+            aanbieden kan alleen als student.
           </p>
 
           <blockquote className="landing-quote max-w-2xl">
@@ -79,7 +79,7 @@ export default function LandingPage() {
           </div>
 
           <p className="landing-preview-intro">
-            Je vult kort in waarvoor je hulp zoekt. Zo weet een helper meteen of die kan helpen.
+            Je vult kort in waarvoor je hulp zoekt. Zo weet een student meteen of die kan helpen.
           </p>
 
           <div className="landing-request-card">
@@ -124,11 +124,12 @@ export default function LandingPage() {
       <section className="landing-band">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6 md:py-18">
           <p className="landing-section-label">Wat we doen</p>
-          <h2 className="mt-2 text-3xl font-black text-brand-950 md:text-4xl">
-            Waarvoor kan je Helpse gebruiken?
-          </h2>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-700">
-            Helpse is bedoeld voor eenvoudige taken waarbij iemand uit de buurt kan helpen.
+            <h2 className="mt-2 text-3xl font-black text-brand-950 md:text-4xl">
+              Waarvoor kan je Helpse gebruiken?
+            </h2>
+            <p className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-700">
+            Helpse is bedoeld voor eenvoudige taken waarbij studenten uit de buurt hulp kunnen
+            bieden.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -174,7 +175,7 @@ export default function LandingPage() {
               Klaar om te starten?
             </h2>
             <p className="mt-3 max-w-3xl text-lg text-white/90">
-              Plaats een hulpvraag of kijk welke hulpvragen er in je buurt openstaan.
+              Plaats een hulpvraag of bied als student hulp aan in je buurt.
             </p>
           </div>
 
