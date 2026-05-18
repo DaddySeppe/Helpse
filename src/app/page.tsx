@@ -342,8 +342,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f3ed] text-zinc-900">
-      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#f6f3ed] text-zinc-900 [background-image:linear-gradient(rgba(24,24,27,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
         <Header
           compact={
             currentView === "preview" ||
@@ -483,8 +483,8 @@ function Header({
 }) {
   return (
     <motion.header
-      className={`flex items-center justify-between gap-4 ${
-        compact ? "mb-5" : "mb-8"
+      className={`sticky top-3 z-40 flex items-center justify-between gap-4 rounded-[1.4rem] border border-zinc-200/80 bg-[#fffdfa]/90 p-3 shadow-lg shadow-zinc-900/5 backdrop-blur ${
+        compact ? "mb-4" : "mb-8"
       }`}
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -493,10 +493,10 @@ function Header({
       <button
         type="button"
         onClick={onLogoClick}
-        className="flex min-h-12 items-center gap-3 text-left"
+        className="flex min-h-12 items-center gap-3 rounded-2xl pr-2 text-left"
         aria-label="Ga naar Helpse startpagina"
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f47b20] text-white shadow-sm">
+        <span className="flex h-12 w-12 items-center justify-center rounded-[1.1rem] bg-[#f47b20] text-white shadow-md shadow-orange-900/15">
           <Hammer aria-hidden="true" size={25} strokeWidth={2.5} />
         </span>
         <span>
@@ -504,7 +504,7 @@ function Header({
             Helpse
           </span>
           {!compact && (
-            <span className="mt-1 block max-w-[17rem] text-sm font-semibold leading-5 text-zinc-600">
+            <span className="mt-1 block max-w-[17rem] text-sm font-bold leading-5 text-zinc-600">
               Jouw offertes in 10 seconden ingesproken en verstuurd.
             </span>
           )}
@@ -515,12 +515,12 @@ function Header({
         <button
           type="button"
           onClick={onLogout}
-          className="min-h-12 rounded-full border border-zinc-200 bg-white px-4 text-sm font-black text-zinc-700 shadow-sm"
+          className="min-h-12 rounded-full border border-zinc-200 bg-white px-4 text-sm font-black text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50"
         >
           Uitloggen
         </button>
       ) : (
-        <div className="rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-700 shadow-sm">
+        <div className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black text-[#c35f14] shadow-sm">
           Beta MVP
         </div>
       )}
@@ -544,7 +544,7 @@ function AppNav({
   ];
 
   return (
-    <nav className="mb-5 grid grid-cols-3 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
+    <nav className="mb-5 grid grid-cols-3 gap-2 rounded-[1.35rem] border border-zinc-200 bg-[#fffdfa] p-2 shadow-lg shadow-zinc-900/5">
       {items.map((item) => {
         const Icon = item.icon;
         const isActive =
@@ -560,10 +560,10 @@ function AppNav({
             key={item.view}
             type="button"
             onClick={() => onNavigate(item.view)}
-            className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-2 text-xs font-black transition sm:flex-row sm:text-sm ${
+            className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-[1rem] px-2 text-xs font-black transition sm:flex-row sm:text-sm ${
               isActive
-                ? "bg-zinc-950 text-white"
-                : "text-zinc-600 hover:bg-[#f6f3ed]"
+                ? "bg-zinc-950 text-white shadow-md shadow-zinc-900/15"
+                : "text-zinc-600 hover:bg-[#f6f3ed] hover:text-zinc-950"
             }`}
           >
             <Icon aria-hidden="true" size={18} />
@@ -596,15 +596,15 @@ function LandingView({
       exit={{ opacity: 0, y: -14 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="grid min-h-[calc(100vh-7.5rem)] content-center gap-8 lg:grid-cols-[1fr_0.92fr] lg:items-center">
+      <div className="grid min-h-[calc(100vh-9rem)] content-center gap-8 lg:grid-cols-[1fr_0.92fr] lg:items-center">
         <div className="max-w-xl">
-          <p className="mb-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-[#c35f14] shadow-sm">
+          <p className="mb-4 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-black text-[#c35f14] shadow-sm">
             Voor stielmannen die liever werken dan typen
           </p>
-          <h1 className="text-5xl font-black leading-[1.02] text-zinc-950 sm:text-6xl">
+          <h1 className="max-w-2xl text-5xl font-black leading-[1.02] text-zinc-950 sm:text-6xl lg:text-7xl">
             Offertes maken zonder gedoe.
           </h1>
-          <p className="mt-5 text-xl font-semibold leading-8 text-zinc-700">
+          <p className="mt-5 max-w-lg text-xl font-bold leading-8 text-zinc-700">
             Spreek in wat je gaat doen. Helpse maakt er een nette offerte van,
             klaar om te versturen.
           </p>
@@ -627,6 +627,12 @@ function LandingView({
             >
               Inloggen
             </motion.button>
+          </div>
+
+          <div className="mt-6 grid grid-cols-3 gap-2 sm:max-w-xl">
+            <LandingStat value="10 sec" label="van spraak naar offerte" />
+            <LandingStat value="21%" label="btw automatisch mee" />
+            <LandingStat value="0 gedoe" label="gemaakt voor op de baan" />
           </div>
         </div>
 
@@ -656,8 +662,16 @@ function DemoPanel() {
   ];
 
   return (
-    <div className="rounded-[2rem] border border-zinc-200 bg-[#fffdfa] p-4 shadow-xl shadow-zinc-900/5">
-      <div className="rounded-3xl bg-zinc-950 p-4 text-white">
+    <div className="rounded-[1.6rem] border border-zinc-200 bg-[#fffdfa] p-3 shadow-2xl shadow-zinc-900/10">
+      <div className="mb-3 flex items-center justify-between px-2">
+        <div className="flex gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#f47b20]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#f4c430]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#20a85a]" />
+        </div>
+        <span className="text-xs font-black text-zinc-500">live preview</span>
+      </div>
+      <div className="rounded-[1.35rem] bg-zinc-950 p-4 text-white">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-black text-orange-200">Demo offerte</p>
@@ -667,7 +681,7 @@ function DemoPanel() {
             Klaar
           </div>
         </div>
-        <div className="space-y-2 rounded-2xl bg-white/10 p-3">
+        <div className="space-y-2 rounded-[1rem] bg-white/10 p-3">
           <DemoLine label="Klant" value="Jan Peeters" />
           <DemoLine label="Materiaal" value="€ 200,50" />
           <DemoLine label="Werkuren" value="3 u" />
@@ -683,9 +697,9 @@ function DemoPanel() {
           return (
             <div
               key={step.title}
-              className="grid grid-cols-[3rem_1fr] gap-3 rounded-2xl bg-white p-3 shadow-sm"
+              className="grid grid-cols-[3rem_1fr] gap-3 rounded-[1.1rem] border border-zinc-100 bg-white p-3 shadow-sm"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f3ed] text-[#c35f14]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[1rem] bg-[#f6f3ed] text-[#c35f14]">
                 <Icon aria-hidden="true" size={22} />
               </div>
               <div>
@@ -700,6 +714,15 @@ function DemoPanel() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function LandingStat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-[1.1rem] border border-zinc-200 bg-[#fffdfa] p-3 shadow-sm">
+      <p className="text-lg font-black text-zinc-950">{value}</p>
+      <p className="mt-1 text-xs font-bold leading-4 text-zinc-600">{label}</p>
     </div>
   );
 }
@@ -761,7 +784,7 @@ function AuthView({
       exit={{ opacity: 0, y: -14 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="w-full max-w-md rounded-[2rem] border border-zinc-200 bg-[#fffdfa] p-5 shadow-xl shadow-zinc-900/5">
+      <div className="w-full max-w-md rounded-[1.6rem] border border-zinc-200 bg-[#fffdfa] p-5 shadow-2xl shadow-zinc-900/10">
         <p className="text-sm font-black uppercase text-[#c35f14]">
           {isLogin ? "Welkom terug" : "Gratis starten"}
         </p>
@@ -872,16 +895,19 @@ function AccountView({
       exit={{ opacity: 0, y: -14 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-5">
+      <div className="mb-5 rounded-[1.4rem] border border-zinc-200 bg-[#fffdfa] p-5 shadow-lg shadow-zinc-900/5">
         <p className="text-sm font-black uppercase text-[#c35f14]">Account</p>
         <h1 className="mt-1 text-3xl font-black leading-10 text-zinc-950">
           Je Helpse instellingen.
         </h1>
+        <p className="mt-2 max-w-2xl text-base font-bold leading-6 text-zinc-600">
+          Beheer je login, abonnement en Pro-toegang op een plek.
+        </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_0.9fr]">
         <Section title="Profiel">
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <div className="rounded-[1.1rem] border border-zinc-100 bg-white p-4 shadow-sm">
             <p className="text-sm font-black text-zinc-500">E-mail</p>
             <p className="mt-1 break-words text-lg font-black text-zinc-950">
               {email}
@@ -954,14 +980,14 @@ function BillingView({
       exit={{ opacity: 0, y: -14 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-5">
+      <div className="mb-5 rounded-[1.4rem] border border-zinc-200 bg-[#fffdfa] p-5 shadow-lg shadow-zinc-900/5">
         <p className="text-sm font-black uppercase text-[#c35f14]">
           Helpse Pro
         </p>
         <h1 className="mt-1 text-3xl font-black leading-10 text-zinc-950">
           Kies hoe je wil betalen.
         </h1>
-        <p className="mt-2 max-w-2xl text-base font-semibold leading-6 text-zinc-600">
+        <p className="mt-2 max-w-2xl text-base font-bold leading-6 text-zinc-600">
           Hoe langer je vooruit betaalt, hoe goedkoper Helpse wordt. Stripe en
           Bancontact koppelen we in de volgende backend-iteratie; deze knop
           simuleert nu een succesvolle betaling.
@@ -979,7 +1005,7 @@ function BillingView({
         ))}
       </div>
 
-      <section className="mt-4 rounded-3xl border border-zinc-200 bg-[#fffdfa] p-4 shadow-sm">
+      <section className="mt-4 rounded-[1.4rem] border border-zinc-200 bg-[#fffdfa] p-4 shadow-lg shadow-zinc-900/5">
         <h2 className="text-xl font-black text-zinc-950">Wat zit erin?</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <FeatureTile title="Onbeperkt offertes" text="Geen gedoe per offerte." />
@@ -1012,16 +1038,16 @@ function PlanCard({
 }) {
   return (
     <motion.article
-      className={`relative rounded-3xl border p-5 shadow-sm ${
+      className={`relative rounded-[1.45rem] border p-5 shadow-lg shadow-zinc-900/5 ${
         isActive
-          ? "border-[#20a85a] bg-green-50"
+          ? "border-[#20a85a] bg-green-50 shadow-green-900/10"
           : "border-zinc-200 bg-[#fffdfa]"
       }`}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
     >
       {plan.badge && (
-        <span className="absolute right-4 top-4 rounded-full bg-[#20a85a] px-3 py-1 text-xs font-black text-white">
+        <span className="absolute right-4 top-4 rounded-full bg-[#20a85a] px-3 py-1 text-xs font-black text-white shadow-sm">
           {plan.badge}
         </span>
       )}
@@ -1037,7 +1063,7 @@ function PlanCard({
       <button
         type="button"
         onClick={onChoose}
-        className={`mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-black shadow-sm ${
+        className={`mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-[1rem] px-4 text-base font-black shadow-sm transition ${
           isActive
             ? "bg-[#20a85a] text-white"
             : "bg-zinc-950 text-white"
@@ -1052,7 +1078,7 @@ function PlanCard({
 
 function FeatureTile({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="rounded-[1.1rem] border border-zinc-100 bg-white p-4 shadow-sm">
       <Check aria-hidden="true" className="text-[#20a85a]" size={22} />
       <p className="mt-3 text-base font-black text-zinc-950">{title}</p>
       <p className="mt-1 text-sm font-semibold leading-5 text-zinc-600">
@@ -1084,14 +1110,14 @@ function DashboardView({
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.28 }}
     >
-      <div className="mb-8 max-w-md">
-        <p className="mb-3 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-[#c35f14] shadow-sm">
+      <div className="mb-8 max-w-xl rounded-[1.6rem] border border-zinc-200 bg-[#fffdfa] p-5 text-center shadow-lg shadow-zinc-900/5">
+        <p className="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-black text-[#c35f14] shadow-sm">
           {hasProAccess ? "Helpse Pro actief" : "Gratis account"}
         </p>
         <h1 className="text-4xl font-black leading-11 text-zinc-950 sm:text-5xl sm:leading-14">
           Klaar voor een nieuwe offerte?
         </h1>
-        <p className="mt-4 text-lg font-semibold leading-7 text-zinc-700">
+        <p className="mx-auto mt-4 max-w-md text-lg font-bold leading-7 text-zinc-700">
           Druk op de knop, vertel de klus, en laat Helpse het nette werk doen.
         </p>
       </div>
@@ -1521,7 +1547,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-[#fffdfa] p-4 shadow-sm">
+    <section className="rounded-[1.4rem] border border-zinc-200 bg-[#fffdfa] p-4 shadow-lg shadow-zinc-900/5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-xl font-black text-zinc-950">{title}</h2>
         {action}
