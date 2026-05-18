@@ -25,13 +25,13 @@ Open daarna [http://localhost:3000](http://localhost:3000).
 
 1. Maak een project aan op Supabase.
 2. Ga naar Project Settings > API.
-3. Kopieer de Project URL en anon public key.
+3. Kopieer de Project URL en publishable key.
 4. Maak lokaal een `.env.local` bestand op basis van `.env.example`.
 5. Vul deze waarden in:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 ```
 
 6. Ga in Supabase naar Authentication > Providers en zet Email aan.

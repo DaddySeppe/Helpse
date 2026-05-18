@@ -139,7 +139,7 @@ export default function Home() {
 
     if (!supabase) {
       setAuthError(
-        "Supabase is nog niet gekoppeld. Zet eerst je NEXT_PUBLIC_SUPABASE_URL en NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+        "Supabase is nog niet gekoppeld. Zet eerst je NEXT_PUBLIC_SUPABASE_URL en NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.",
       );
       return;
     }

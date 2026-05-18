@@ -1,12 +1,22 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const fallbackSupabaseUrl = "https://wjwgovjmksglakopjbie.supabase.co";
+const fallbackSupabasePublishableKey =
+  "sb_publishable_K-uxyYphqtjZ1iniOVCtvg_jBlvflXj";
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? fallbackSupabaseUrl;
+const supabasePublishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  fallbackSupabasePublishableKey;
+
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl && supabasePublishableKey,
+);
 
 // Client-side Supabase client. Zonder env-vars blijft de build werken.
 export const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
+  supabaseUrl && supabasePublishableKey
+    ? createClient(supabaseUrl, supabasePublishableKey)
   : null;
