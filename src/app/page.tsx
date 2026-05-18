@@ -2,19 +2,33 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowRight,
+  Check,
   FileDown,
   Hammer,
   Loader2,
+  Lock,
   MessageCircle,
   Mic,
   Plus,
   RotateCcw,
+  Send,
+  Sparkles,
   Square,
   Trash2,
+  X,
 } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 
-type AppState = "idle" | "recording" | "processing" | "preview";
+type AppView =
+  | "landing"
+  | "auth-login"
+  | "auth-register"
+  | "dashboard"
+  | "recording"
+  | "processing"
+  | "preview"
+  | "paywall";
 
 type Material = {
   id: number;
@@ -42,7 +56,9 @@ function toNumber(value: string) {
 }
 
 export default function Home() {
-  const [appState, setAppState] = useState<AppState>("idle");
+  const [currentView, setCurrentView] = useState<AppView>("landing");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [customerName, setCustomerName] = useState("Jan Peeters");
   const [customerAddress, setCustomerAddress] = useState(
     "Kerkstraat 14, 2800 Mechelen",
@@ -69,16 +85,21 @@ export default function Home() {
     };
   }, [materials, hours, hourlyRate]);
 
+  function submitAuth() {
+    // Dummy-auth: echte login en registratie volgen later.
+    setCurrentView("dashboard");
+  }
+
   function startRecording() {
-    setAppState("recording");
+    setCurrentView("recording");
   }
 
   function stopRecording() {
-    setAppState("processing");
+    setCurrentView("processing");
 
     // Simuleert de AI-verwerking tot de backend eraan komt.
     window.setTimeout(() => {
-      setAppState("preview");
+      setCurrentView("preview");
     }, 1600);
   }
 
@@ -108,27 +129,65 @@ export default function Home() {
     );
   }
 
-  function resetFlow() {
-    setAppState("idle");
+  function resetToDashboard() {
+    setCurrentView("dashboard");
   }
 
   return (
     <main className="min-h-screen bg-[#f6f3ed] text-zinc-900">
-      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-        <Header compact={appState === "preview"} />
+      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+        <Header
+          compact={
+            currentView === "preview" ||
+            currentView === "paywall" ||
+            currentView === "dashboard" ||
+            currentView === "recording"
+          }
+          isLoggedIn={
+            currentView !== "landing" &&
+            currentView !== "auth-login" &&
+            currentView !== "auth-register"
+          }
+          onLogoClick={() => setCurrentView("landing")}
+          onLogout={() => setCurrentView("landing")}
+        />
 
         <AnimatePresence mode="wait">
-          {(appState === "idle" || appState === "recording") && (
-            <RecordingView
-              isRecording={appState === "recording"}
+          {currentView === "landing" && (
+            <LandingView
+              onRegister={() => setCurrentView("auth-register")}
+              onLogin={() => setCurrentView("auth-login")}
+            />
+          )}
+
+          {(currentView === "auth-login" ||
+            currentView === "auth-register") && (
+            <AuthView
+              mode={currentView === "auth-login" ? "login" : "register"}
+              email={email}
+              password={password}
+              onEmailChange={setEmail}
+              onPasswordChange={setPassword}
+              onSubmit={submitAuth}
+              onSwitchMode={() =>
+                setCurrentView(
+                  currentView === "auth-login" ? "auth-register" : "auth-login",
+                )
+              }
+            />
+          )}
+
+          {(currentView === "dashboard" || currentView === "recording") && (
+            <DashboardView
+              isRecording={currentView === "recording"}
               onStart={startRecording}
               onStop={stopRecording}
             />
           )}
 
-          {appState === "processing" && <ProcessingView />}
+          {currentView === "processing" && <ProcessingView />}
 
-          {appState === "preview" && (
+          {(currentView === "preview" || currentView === "paywall") && (
             <PreviewView
               customerName={customerName}
               customerAddress={customerAddress}
@@ -145,8 +204,15 @@ export default function Home() {
               onRemoveMaterial={removeMaterial}
               onHoursChange={setHours}
               onHourlyRateChange={setHourlyRate}
-              onReset={resetFlow}
+              onReset={resetToDashboard}
+              onShowPaywall={() => setCurrentView("paywall")}
             />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {currentView === "paywall" && (
+            <PaywallModal onClose={() => setCurrentView("preview")} />
           )}
         </AnimatePresence>
       </div>
@@ -154,37 +220,292 @@ export default function Home() {
   );
 }
 
-function Header({ compact }: { compact: boolean }) {
+function Header({
+  compact,
+  isLoggedIn,
+  onLogoClick,
+  onLogout,
+}: {
+  compact: boolean;
+  isLoggedIn: boolean;
+  onLogoClick: () => void;
+  onLogout: () => void;
+}) {
   return (
     <motion.header
-      className={`flex items-center justify-between ${compact ? "mb-5" : "mb-10"}`}
+      className={`flex items-center justify-between gap-4 ${
+        compact ? "mb-5" : "mb-8"
+      }`}
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
     >
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f47b20] text-white shadow-sm">
+      <button
+        type="button"
+        onClick={onLogoClick}
+        className="flex min-h-12 items-center gap-3 text-left"
+        aria-label="Ga naar Helpse startpagina"
+      >
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f47b20] text-white shadow-sm">
           <Hammer aria-hidden="true" size={25} strokeWidth={2.5} />
-        </div>
-        <div>
-          <p className="text-2xl font-black leading-none text-zinc-950">
+        </span>
+        <span>
+          <span className="block text-2xl font-black leading-none text-zinc-950">
             Helpse
-          </p>
+          </span>
           {!compact && (
-            <p className="mt-1 max-w-[16rem] text-sm font-semibold leading-5 text-zinc-600">
+            <span className="mt-1 block max-w-[17rem] text-sm font-semibold leading-5 text-zinc-600">
               Jouw offertes in 10 seconden ingesproken en verstuurd.
-            </p>
+            </span>
           )}
+        </span>
+      </button>
+
+      {isLoggedIn ? (
+        <button
+          type="button"
+          onClick={onLogout}
+          className="min-h-12 rounded-full border border-zinc-200 bg-white px-4 text-sm font-black text-zinc-700 shadow-sm"
+        >
+          Uitloggen
+        </button>
+      ) : (
+        <div className="rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-700 shadow-sm">
+          Beta MVP
         </div>
-      </div>
-      <div className="rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-700 shadow-sm">
-        MVP
-      </div>
+      )}
     </motion.header>
   );
 }
 
-function RecordingView({
+function LandingView({
+  onRegister,
+  onLogin,
+}: {
+  onRegister: () => void;
+  onLogin: () => void;
+}) {
+  return (
+    <motion.section
+      key="landing"
+      className="pb-10"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -14 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="grid min-h-[calc(100vh-7.5rem)] content-center gap-8 lg:grid-cols-[1fr_0.92fr] lg:items-center">
+        <div className="max-w-xl">
+          <p className="mb-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-[#c35f14] shadow-sm">
+            Voor stielmannen die liever werken dan typen
+          </p>
+          <h1 className="text-5xl font-black leading-[1.02] text-zinc-950 sm:text-6xl">
+            Offertes maken zonder gedoe.
+          </h1>
+          <p className="mt-5 text-xl font-semibold leading-8 text-zinc-700">
+            Spreek in wat je gaat doen. Helpse maakt er een nette offerte van,
+            klaar om te versturen.
+          </p>
+
+          <div className="mt-7 grid gap-3 sm:max-w-xl sm:grid-cols-2">
+            <motion.button
+              type="button"
+              onClick={onRegister}
+              className="flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-[#f47b20] px-5 text-lg font-black text-white shadow-lg shadow-orange-900/10"
+              whileTap={{ scale: 0.98 }}
+            >
+              Maak gratis account aan
+              <ArrowRight aria-hidden="true" size={23} />
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={onLogin}
+              className="flex min-h-16 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 text-lg font-black text-zinc-950 shadow-sm"
+              whileTap={{ scale: 0.98 }}
+            >
+              Inloggen
+            </motion.button>
+          </div>
+        </div>
+
+        <DemoPanel />
+      </div>
+    </motion.section>
+  );
+}
+
+function DemoPanel() {
+  const steps = [
+    {
+      title: "Inspreken",
+      text: "Vertel wat er moet gebeuren.",
+      icon: Mic,
+    },
+    {
+      title: "AI typt",
+      text: "Helpse zet alles netjes klaar.",
+      icon: Sparkles,
+    },
+    {
+      title: "Versturen",
+      text: "PDF of WhatsApp naar je klant.",
+      icon: Send,
+    },
+  ];
+
+  return (
+    <div className="rounded-[2rem] border border-zinc-200 bg-[#fffdfa] p-4 shadow-xl shadow-zinc-900/5">
+      <div className="rounded-3xl bg-zinc-950 p-4 text-white">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-black text-orange-200">Demo offerte</p>
+            <p className="text-xl font-black">Kraan vervangen</p>
+          </div>
+          <div className="rounded-full bg-[#20a85a] px-3 py-2 text-xs font-black">
+            Klaar
+          </div>
+        </div>
+        <div className="space-y-2 rounded-2xl bg-white/10 p-3">
+          <DemoLine label="Klant" value="Jan Peeters" />
+          <DemoLine label="Materiaal" value="€ 200,50" />
+          <DemoLine label="Werkuren" value="3 u" />
+          <div className="h-px bg-white/15" />
+          <DemoLine label="Totaal incl. BTW" value="€ 453,15" strong />
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3">
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+
+          return (
+            <div
+              key={step.title}
+              className="grid grid-cols-[3rem_1fr] gap-3 rounded-2xl bg-white p-3 shadow-sm"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f3ed] text-[#c35f14]">
+                <Icon aria-hidden="true" size={22} />
+              </div>
+              <div>
+                <p className="text-base font-black text-zinc-950">
+                  {index + 1}. {step.title}
+                </p>
+                <p className="text-sm font-semibold leading-5 text-zinc-600">
+                  {step.text}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DemoLine({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-sm font-bold text-zinc-300">{label}</span>
+      <span className={`text-right font-black ${strong ? "text-xl" : ""}`}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function AuthView({
+  mode,
+  email,
+  password,
+  onEmailChange,
+  onPasswordChange,
+  onSubmit,
+  onSwitchMode,
+}: {
+  mode: "login" | "register";
+  email: string;
+  password: string;
+  onEmailChange: (value: string) => void;
+  onPasswordChange: (value: string) => void;
+  onSubmit: () => void;
+  onSwitchMode: () => void;
+}) {
+  const isLogin = mode === "login";
+
+  return (
+    <motion.section
+      key={mode}
+      className="flex flex-1 items-center justify-center pb-10"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -14 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="w-full max-w-md rounded-[2rem] border border-zinc-200 bg-[#fffdfa] p-5 shadow-xl shadow-zinc-900/5">
+        <p className="text-sm font-black uppercase text-[#c35f14]">
+          {isLogin ? "Welkom terug" : "Gratis starten"}
+        </p>
+        <h1 className="mt-2 text-3xl font-black leading-10 text-zinc-950">
+          {isLogin ? "Log in op Helpse." : "Maak je account aan."}
+        </h1>
+        <p className="mt-2 text-base font-semibold leading-6 text-zinc-600">
+          Dummy login voor de MVP. Klik op Ga verder om naar het dashboard te
+          gaan.
+        </p>
+
+        <form
+          className="mt-6 space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit();
+          }}
+        >
+          <TextField
+            label="E-mail"
+            value={email}
+            type="email"
+            placeholder="jij@bedrijf.be"
+            onChange={onEmailChange}
+          />
+          <TextField
+            label="Wachtwoord"
+            value={password}
+            type="password"
+            placeholder="Minstens 8 tekens"
+            onChange={onPasswordChange}
+          />
+
+          <motion.button
+            type="submit"
+            className="flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-[#f47b20] px-5 text-lg font-black text-white shadow-lg shadow-orange-900/10"
+            whileTap={{ scale: 0.98 }}
+          >
+            Ga verder
+            <ArrowRight aria-hidden="true" size={23} />
+          </motion.button>
+        </form>
+
+        <button
+          type="button"
+          onClick={onSwitchMode}
+          className="mt-4 min-h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-black text-zinc-700"
+        >
+          {isLogin ? "Nog geen account? Registreer" : "Al een account? Inloggen"}
+        </button>
+      </div>
+    </motion.section>
+  );
+}
+
+function DashboardView({
   isRecording,
   onStart,
   onStop,
@@ -195,7 +516,7 @@ function RecordingView({
 }) {
   return (
     <motion.section
-      key="recording"
+      key="dashboard"
       className="flex flex-1 flex-col items-center justify-center pb-10 text-center"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -203,11 +524,14 @@ function RecordingView({
       transition={{ duration: 0.28 }}
     >
       <div className="mb-8 max-w-md">
+        <p className="mb-3 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-[#c35f14] shadow-sm">
+          Dashboard
+        </p>
         <h1 className="text-4xl font-black leading-11 text-zinc-950 sm:text-5xl sm:leading-14">
-          Spreek je offerte in.
+          Klaar voor een nieuwe offerte?
         </h1>
         <p className="mt-4 text-lg font-semibold leading-7 text-zinc-700">
-          Helpse zet je uitleg om naar een nette offerte voor je klant.
+          Druk op de knop, vertel de klus, en laat Helpse het nette werk doen.
         </p>
       </div>
 
@@ -263,7 +587,7 @@ function RecordingView({
           </motion.button>
         ) : (
           <p className="rounded-full bg-white px-5 py-3 text-sm font-bold text-zinc-600 shadow-sm">
-            Klaar voor de klus, niet voor papierwerk.
+            Een offerte starten duurt minder lang dan je koffie halen.
           </p>
         )}
       </div>
@@ -320,6 +644,7 @@ function PreviewView({
   onHoursChange,
   onHourlyRateChange,
   onReset,
+  onShowPaywall,
 }: {
   customerName: string;
   customerAddress: string;
@@ -343,6 +668,7 @@ function PreviewView({
   onHoursChange: (value: number) => void;
   onHourlyRateChange: (value: number) => void;
   onReset: () => void;
+  onShowPaywall: () => void;
 }) {
   return (
     <motion.section
@@ -389,7 +715,7 @@ function PreviewView({
         <Section title="Klus">
           <label className="block">
             <span className="mb-2 block text-sm font-black text-zinc-700">
-              Korte omschrijving
+              Beschrijving klus
             </span>
             <textarea
               value={jobDescription}
@@ -483,7 +809,7 @@ function PreviewView({
           <div className="grid gap-3 sm:grid-cols-2">
             <motion.button
               type="button"
-              onClick={() => alert("PDF opslaan komt in de volgende iteratie.")}
+              onClick={onShowPaywall}
               className="flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-zinc-950 px-5 text-lg font-black text-white shadow-lg"
               whileTap={{ scale: 0.98 }}
             >
@@ -492,9 +818,7 @@ function PreviewView({
             </motion.button>
             <motion.button
               type="button"
-              onClick={() =>
-                alert("WhatsApp versturen komt in de volgende iteratie.")
-              }
+              onClick={onShowPaywall}
               className="flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-[#20a85a] px-5 text-lg font-black text-white shadow-lg shadow-green-900/10"
               whileTap={{ scale: 0.98 }}
             >
@@ -508,13 +832,107 @@ function PreviewView({
   );
 }
 
+function PaywallModal({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/55 px-4 pb-4 backdrop-blur-sm sm:items-center sm:pb-0"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="paywall-title"
+    >
+      <motion.div
+        className="w-full max-w-md rounded-[2rem] bg-[#fffdfa] p-5 shadow-2xl"
+        initial={{ opacity: 0, y: 28, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 28, scale: 0.98 }}
+        transition={{ duration: 0.22 }}
+      >
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f47b20] text-white">
+            <Lock aria-hidden="true" size={26} />
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex min-h-12 min-w-12 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700"
+            aria-label="Sluit betaalmuur"
+          >
+            <X aria-hidden="true" size={22} />
+          </button>
+        </div>
+
+        <p className="text-sm font-black uppercase text-[#c35f14]">
+          Helpse Pro
+        </p>
+        <h2
+          id="paywall-title"
+          className="mt-2 text-3xl font-black leading-10 text-zinc-950"
+        >
+          Klaar om deze offerte te versturen?
+        </h2>
+        <p className="mt-3 text-lg font-semibold leading-7 text-zinc-700">
+          Upgrade naar Helpse Pro en verstuur onbeperkt offertes naar je
+          klanten.
+        </p>
+
+        <div className="mt-5 rounded-3xl bg-zinc-950 p-5 text-white">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-black text-orange-200">Onbeperkt</p>
+              <p className="text-lg font-black">Helpse Pro</p>
+            </div>
+            <p className="text-4xl font-black">
+              €19
+              <span className="text-base font-black text-zinc-300">/maand</span>
+            </p>
+          </div>
+          <div className="mt-4 space-y-2">
+            <PlanFeature>Onbeperkt offertes maken</PlanFeature>
+            <PlanFeature>PDF export</PlanFeature>
+            <PlanFeature>WhatsApp versturen</PlanFeature>
+          </div>
+        </div>
+
+        <motion.button
+          type="button"
+          onClick={() => alert("Redirect naar Stripe/Bancontact")}
+          className="mt-5 flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-[#20a85a] px-5 text-lg font-black text-white shadow-lg shadow-green-900/10"
+          whileTap={{ scale: 0.98 }}
+        >
+          Start mijn abonnement
+          <ArrowRight aria-hidden="true" size={23} />
+        </motion.button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-3 min-h-12 w-full rounded-2xl bg-transparent px-4 text-sm font-black text-zinc-600"
+        >
+          Nog even aanpassen
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function PlanFeature({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 text-sm font-bold text-zinc-200">
+      <Check aria-hidden="true" className="text-[#20a85a]" size={18} />
+      {children}
+    </div>
+  );
+}
+
 function Section({
   title,
   action,
   children,
 }: {
   title: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -531,10 +949,14 @@ function Section({
 function TextField({
   label,
   value,
+  type = "text",
+  placeholder,
   onChange,
 }: {
   label: string;
   value: string;
+  type?: "text" | "email" | "password";
+  placeholder?: string;
   onChange: (value: string) => void;
 }) {
   return (
@@ -544,8 +966,10 @@ function TextField({
       </span>
       <input
         value={value}
+        type={type}
+        placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-14 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-base font-semibold text-zinc-900 outline-none transition focus:border-[#f47b20] focus:ring-4 focus:ring-orange-100"
+        className="min-h-14 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-base font-semibold text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-[#f47b20] focus:ring-4 focus:ring-orange-100"
       />
     </label>
   );

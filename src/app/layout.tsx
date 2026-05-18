@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Helpse | Offertes inspreken",
-  description: "Jouw offertes in 10 seconden ingesproken en verstuurd.",
+  description: "Jouw offertes in 10 seconden ingesproken én verstuurd.",
 };
 
 export default function RootLayout({
