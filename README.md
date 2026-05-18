@@ -35,9 +35,11 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 ```
 
 6. Ga in Supabase naar Authentication > Providers en zet Email aan.
-7. Ga naar Authentication > URL Configuration en voeg je site URL toe:
-   - lokaal: `http://localhost:3000`
-   - productie: je echte Helpse domein
+7. Ga naar Authentication > URL Configuration en voeg je site en redirects toe:
+   - lokale Site URL: `http://localhost:3000`
+   - lokale Redirect URL: `http://localhost:3000/auth/callback`
+   - productie Site URL: je echte Helpse domein
+   - productie Redirect URL: `https://jouw-domein.be/auth/callback`
 8. Voer optioneel `supabase/schema.sql` uit in de Supabase SQL Editor voor een `profiles` tabel.
 
 ## Checks
