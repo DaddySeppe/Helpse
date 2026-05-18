@@ -3,9 +3,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
+  BadgeCheck,
+  CalendarDays,
   Check,
+  CreditCard,
   FileDown,
   Hammer,
+  LayoutDashboard,
   Loader2,
   Lock,
   MessageCircle,
@@ -13,6 +17,7 @@ import {
   Plus,
   RotateCcw,
   Send,
+  Settings,
   Sparkles,
   Square,
   Trash2,
@@ -27,6 +32,8 @@ type AppView =
   | "auth-login"
   | "auth-register"
   | "dashboard"
+  | "account"
+  | "billing"
   | "recording"
   | "processing"
   | "preview"
@@ -38,10 +45,46 @@ type Material = {
   price: number;
 };
 
+type PlanId = "none" | "monthly" | "quarterly" | "yearly";
+
+type BillingPlan = {
+  id: Exclude<PlanId, "none">;
+  name: string;
+  price: string;
+  detail: string;
+  discount: string;
+  badge?: string;
+};
+
 const initialMaterials: Material[] = [
   { id: 1, name: "Nieuwe keukenkraan Grohe", price: 145 },
   { id: 2, name: "Flexibele aansluitslangen en koppelingen", price: 38 },
   { id: 3, name: "Silicone en klein materiaal", price: 17.5 },
+];
+
+const billingPlans: BillingPlan[] = [
+  {
+    id: "monthly",
+    name: "Maandelijks",
+    price: "€19",
+    detail: "per maand",
+    discount: "Flexibel opzegbaar",
+  },
+  {
+    id: "quarterly",
+    name: "Per 3 maanden",
+    price: "€51",
+    detail: "€17 per maand",
+    discount: "Bespaar 10%",
+    badge: "Populair",
+  },
+  {
+    id: "yearly",
+    name: "Jaarlijks",
+    price: "€182",
+    detail: "ongeveer €15,17 per maand",
+    discount: "Bespaar 20%",
+  },
 ];
 
 const currencyFormatter = new Intl.NumberFormat("nl-BE", {
@@ -64,6 +107,23 @@ export default function Home() {
   const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
   const [authError, setAuthError] = useState("");
+  const [activePlan, setActivePlan] = useState<PlanId>(() => {
+    if (typeof window === "undefined") {
+      return "none";
+    }
+
+    const storedPlan = window.localStorage.getItem("helpse-plan");
+
+    if (
+      storedPlan === "monthly" ||
+      storedPlan === "quarterly" ||
+      storedPlan === "yearly"
+    ) {
+      return storedPlan;
+    }
+
+    return "none";
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [customerName, setCustomerName] = useState("Jan Peeters");
@@ -91,6 +151,8 @@ export default function Home() {
       total: subtotal + vat,
     };
   }, [materials, hours, hourlyRate]);
+
+  const hasProAccess = activePlan !== "none";
 
   useEffect(() => {
     if (!supabase) {
@@ -205,6 +267,37 @@ export default function Home() {
     setCurrentView("landing");
   }
 
+  function startStripeCheckout(planId: Exclude<PlanId, "none">) {
+    // MVP-simulatie: later vervangen door een server-side Stripe Checkout Session.
+    const selectedPlan = billingPlans.find((plan) => plan.id === planId);
+
+    window.alert(
+      `Stripe Checkout simulatie voor ${selectedPlan?.name ?? "Helpse Pro"}. In productie sturen we je nu naar Stripe/Bancontact.`,
+    );
+    window.localStorage.setItem("helpse-plan", planId);
+    setActivePlan(planId);
+    setCurrentView("dashboard");
+  }
+
+  function cancelSubscription() {
+    window.alert("Abonnement simulatie stopgezet. In productie loopt dit via Stripe Customer Portal.");
+    window.localStorage.removeItem("helpse-plan");
+    setActivePlan("none");
+  }
+
+  function handleQuoteAction(action: "pdf" | "whatsapp") {
+    if (!hasProAccess) {
+      setCurrentView("paywall");
+      return;
+    }
+
+    window.alert(
+      action === "pdf"
+        ? "PDF wordt gemaakt. Backend volgt in de volgende iteratie."
+        : "WhatsApp-bericht wordt klaargezet. Backend volgt in de volgende iteratie.",
+    );
+  }
+
   function startRecording() {
     setCurrentView("recording");
   }
@@ -256,6 +349,8 @@ export default function Home() {
             currentView === "preview" ||
             currentView === "paywall" ||
             currentView === "dashboard" ||
+            currentView === "account" ||
+            currentView === "billing" ||
             currentView === "recording"
           }
           isLoggedIn={
@@ -267,6 +362,14 @@ export default function Home() {
           onLogoClick={() => setCurrentView(session ? "dashboard" : "landing")}
           onLogout={logout}
         />
+
+        {session && (
+          <AppNav
+            currentView={currentView}
+            hasProAccess={hasProAccess}
+            onNavigate={setCurrentView}
+          />
+        )}
 
         <AnimatePresence mode="wait">
           {currentView === "landing" && (
@@ -305,8 +408,27 @@ export default function Home() {
           {(currentView === "dashboard" || currentView === "recording") && (
             <DashboardView
               isRecording={currentView === "recording"}
+              hasProAccess={hasProAccess}
               onStart={startRecording}
               onStop={stopRecording}
+              onOpenBilling={() => setCurrentView("billing")}
+            />
+          )}
+
+          {currentView === "account" && (
+            <AccountView
+              email={session?.user.email ?? email}
+              activePlan={activePlan}
+              onOpenBilling={() => setCurrentView("billing")}
+              onLogout={logout}
+            />
+          )}
+
+          {currentView === "billing" && (
+            <BillingView
+              activePlan={activePlan}
+              onChoosePlan={startStripeCheckout}
+              onCancelSubscription={cancelSubscription}
             />
           )}
 
@@ -330,14 +452,17 @@ export default function Home() {
               onHoursChange={setHours}
               onHourlyRateChange={setHourlyRate}
               onReset={resetToDashboard}
-              onShowPaywall={() => setCurrentView("paywall")}
+              onQuoteAction={handleQuoteAction}
             />
           )}
         </AnimatePresence>
 
         <AnimatePresence>
           {currentView === "paywall" && (
-            <PaywallModal onClose={() => setCurrentView("preview")} />
+            <PaywallModal
+              onClose={() => setCurrentView("preview")}
+              onChoosePlan={startStripeCheckout}
+            />
           )}
         </AnimatePresence>
       </div>
@@ -400,6 +525,58 @@ function Header({
         </div>
       )}
     </motion.header>
+  );
+}
+
+function AppNav({
+  currentView,
+  hasProAccess,
+  onNavigate,
+}: {
+  currentView: AppView;
+  hasProAccess: boolean;
+  onNavigate: (view: AppView) => void;
+}) {
+  const items = [
+    { label: "Dashboard", view: "dashboard" as const, icon: LayoutDashboard },
+    { label: "Abonnement", view: "billing" as const, icon: CreditCard },
+    { label: "Account", view: "account" as const, icon: Settings },
+  ];
+
+  return (
+    <nav className="mb-5 grid grid-cols-3 gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
+      {items.map((item) => {
+        const Icon = item.icon;
+        const isActive =
+          currentView === item.view ||
+          (item.view === "dashboard" &&
+            (currentView === "recording" ||
+              currentView === "processing" ||
+              currentView === "preview" ||
+              currentView === "paywall"));
+
+        return (
+          <button
+            key={item.view}
+            type="button"
+            onClick={() => onNavigate(item.view)}
+            className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-2 text-xs font-black transition sm:flex-row sm:text-sm ${
+              isActive
+                ? "bg-zinc-950 text-white"
+                : "text-zinc-600 hover:bg-[#f6f3ed]"
+            }`}
+          >
+            <Icon aria-hidden="true" size={18} />
+            <span>{item.label}</span>
+            {item.view === "billing" && hasProAccess && (
+              <span className="hidden rounded-full bg-[#20a85a] px-2 py-0.5 text-[0.65rem] text-white sm:inline">
+                Pro
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -670,14 +847,233 @@ function AuthView({
   );
 }
 
+function AccountView({
+  email,
+  activePlan,
+  onOpenBilling,
+  onLogout,
+}: {
+  email: string;
+  activePlan: PlanId;
+  onOpenBilling: () => void;
+  onLogout: () => void;
+}) {
+  const planLabel =
+    activePlan === "none"
+      ? "Geen actief abonnement"
+      : billingPlans.find((plan) => plan.id === activePlan)?.name;
+
+  return (
+    <motion.section
+      key="account"
+      className="pb-8"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -14 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-5">
+        <p className="text-sm font-black uppercase text-[#c35f14]">Account</p>
+        <h1 className="mt-1 text-3xl font-black leading-10 text-zinc-950">
+          Je Helpse instellingen.
+        </h1>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_0.9fr]">
+        <Section title="Profiel">
+          <div className="rounded-2xl bg-white p-4 shadow-sm">
+            <p className="text-sm font-black text-zinc-500">E-mail</p>
+            <p className="mt-1 break-words text-lg font-black text-zinc-950">
+              {email}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              alert("Wachtwoord resetten koppelen we later aan Supabase.")
+            }
+            className="flex min-h-14 w-full items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 text-base font-black text-zinc-800 shadow-sm"
+          >
+            Wachtwoord wijzigen
+          </button>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex min-h-14 w-full items-center justify-center rounded-2xl bg-zinc-950 px-4 text-base font-black text-white shadow-sm"
+          >
+            Uitloggen
+          </button>
+        </Section>
+
+        <Section title="Abonnement">
+          <div className="rounded-3xl bg-zinc-950 p-5 text-white">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-black text-orange-200">Status</p>
+                <p className="mt-1 text-2xl font-black">{planLabel}</p>
+              </div>
+              {activePlan !== "none" && (
+                <BadgeCheck aria-hidden="true" className="text-[#20a85a]" />
+              )}
+            </div>
+            <p className="mt-4 text-sm font-semibold leading-6 text-zinc-300">
+              {activePlan === "none"
+                ? "Kies Pro om offertes te exporteren en via WhatsApp klaar te zetten."
+                : "Je Pro-functies zijn actief in deze MVP-simulatie."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenBilling}
+            className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#f47b20] px-4 text-base font-black text-white shadow-sm"
+          >
+            <CreditCard aria-hidden="true" size={21} />
+            Abonnement beheren
+          </button>
+        </Section>
+      </div>
+    </motion.section>
+  );
+}
+
+function BillingView({
+  activePlan,
+  onChoosePlan,
+  onCancelSubscription,
+}: {
+  activePlan: PlanId;
+  onChoosePlan: (planId: Exclude<PlanId, "none">) => void;
+  onCancelSubscription: () => void;
+}) {
+  return (
+    <motion.section
+      key="billing"
+      className="pb-8"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -14 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="mb-5">
+        <p className="text-sm font-black uppercase text-[#c35f14]">
+          Helpse Pro
+        </p>
+        <h1 className="mt-1 text-3xl font-black leading-10 text-zinc-950">
+          Kies hoe je wil betalen.
+        </h1>
+        <p className="mt-2 max-w-2xl text-base font-semibold leading-6 text-zinc-600">
+          Hoe langer je vooruit betaalt, hoe goedkoper Helpse wordt. Stripe en
+          Bancontact koppelen we in de volgende backend-iteratie; deze knop
+          simuleert nu een succesvolle betaling.
+        </p>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {billingPlans.map((plan) => (
+          <PlanCard
+            key={plan.id}
+            plan={plan}
+            isActive={activePlan === plan.id}
+            onChoose={() => onChoosePlan(plan.id)}
+          />
+        ))}
+      </div>
+
+      <section className="mt-4 rounded-3xl border border-zinc-200 bg-[#fffdfa] p-4 shadow-sm">
+        <h2 className="text-xl font-black text-zinc-950">Wat zit erin?</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <FeatureTile title="Onbeperkt offertes" text="Geen gedoe per offerte." />
+          <FeatureTile title="PDF export" text="Netjes klaar voor de klant." />
+          <FeatureTile title="WhatsApp klaarzetten" text="Snel versturen vanaf je gsm." />
+        </div>
+
+        {activePlan !== "none" && (
+          <button
+            type="button"
+            onClick={onCancelSubscription}
+            className="mt-4 min-h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-black text-zinc-700"
+          >
+            Simulatie-abonnement stopzetten
+          </button>
+        )}
+      </section>
+    </motion.section>
+  );
+}
+
+function PlanCard({
+  plan,
+  isActive,
+  onChoose,
+}: {
+  plan: BillingPlan;
+  isActive: boolean;
+  onChoose: () => void;
+}) {
+  return (
+    <motion.article
+      className={`relative rounded-3xl border p-5 shadow-sm ${
+        isActive
+          ? "border-[#20a85a] bg-green-50"
+          : "border-zinc-200 bg-[#fffdfa]"
+      }`}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
+    >
+      {plan.badge && (
+        <span className="absolute right-4 top-4 rounded-full bg-[#20a85a] px-3 py-1 text-xs font-black text-white">
+          {plan.badge}
+        </span>
+      )}
+      <CalendarDays aria-hidden="true" className="text-[#f47b20]" size={30} />
+      <h2 className="mt-4 text-2xl font-black text-zinc-950">{plan.name}</h2>
+      <p className="mt-2 text-sm font-black text-[#c35f14]">{plan.discount}</p>
+      <div className="mt-5 flex items-end gap-2">
+        <p className="text-5xl font-black text-zinc-950">{plan.price}</p>
+        <p className="pb-2 text-sm font-bold leading-5 text-zinc-600">
+          {plan.detail}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onChoose}
+        className={`mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-black shadow-sm ${
+          isActive
+            ? "bg-[#20a85a] text-white"
+            : "bg-zinc-950 text-white"
+        }`}
+      >
+        <CreditCard aria-hidden="true" size={21} />
+        {isActive ? "Actief plan" : "Betaal met Stripe"}
+      </button>
+    </motion.article>
+  );
+}
+
+function FeatureTile({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <Check aria-hidden="true" className="text-[#20a85a]" size={22} />
+      <p className="mt-3 text-base font-black text-zinc-950">{title}</p>
+      <p className="mt-1 text-sm font-semibold leading-5 text-zinc-600">
+        {text}
+      </p>
+    </div>
+  );
+}
+
 function DashboardView({
   isRecording,
+  hasProAccess,
   onStart,
   onStop,
+  onOpenBilling,
 }: {
   isRecording: boolean;
+  hasProAccess: boolean;
   onStart: () => void;
   onStop: () => void;
+  onOpenBilling: () => void;
 }) {
   return (
     <motion.section
@@ -690,7 +1086,7 @@ function DashboardView({
     >
       <div className="mb-8 max-w-md">
         <p className="mb-3 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-[#c35f14] shadow-sm">
-          Dashboard
+          {hasProAccess ? "Helpse Pro actief" : "Gratis account"}
         </p>
         <h1 className="text-4xl font-black leading-11 text-zinc-950 sm:text-5xl sm:leading-14">
           Klaar voor een nieuwe offerte?
@@ -751,9 +1147,20 @@ function DashboardView({
             Stop opname
           </motion.button>
         ) : (
-          <p className="rounded-full bg-white px-5 py-3 text-sm font-bold text-zinc-600 shadow-sm">
-            Een offerte starten duurt minder lang dan je koffie halen.
-          </p>
+          <div className="flex flex-col items-center gap-3">
+            <p className="rounded-full bg-white px-5 py-3 text-sm font-bold text-zinc-600 shadow-sm">
+              Een offerte starten duurt minder lang dan je koffie halen.
+            </p>
+            {!hasProAccess && (
+              <button
+                type="button"
+                onClick={onOpenBilling}
+                className="min-h-12 rounded-full bg-zinc-950 px-5 text-sm font-black text-white shadow-sm"
+              >
+                Upgrade voor export en WhatsApp
+              </button>
+            )}
+          </div>
         )}
       </div>
     </motion.section>
@@ -809,7 +1216,7 @@ function PreviewView({
   onHoursChange,
   onHourlyRateChange,
   onReset,
-  onShowPaywall,
+  onQuoteAction,
 }: {
   customerName: string;
   customerAddress: string;
@@ -833,7 +1240,7 @@ function PreviewView({
   onHoursChange: (value: number) => void;
   onHourlyRateChange: (value: number) => void;
   onReset: () => void;
-  onShowPaywall: () => void;
+  onQuoteAction: (action: "pdf" | "whatsapp") => void;
 }) {
   return (
     <motion.section
@@ -974,7 +1381,7 @@ function PreviewView({
           <div className="grid gap-3 sm:grid-cols-2">
             <motion.button
               type="button"
-              onClick={onShowPaywall}
+              onClick={() => onQuoteAction("pdf")}
               className="flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-zinc-950 px-5 text-lg font-black text-white shadow-lg"
               whileTap={{ scale: 0.98 }}
             >
@@ -983,7 +1390,7 @@ function PreviewView({
             </motion.button>
             <motion.button
               type="button"
-              onClick={onShowPaywall}
+              onClick={() => onQuoteAction("whatsapp")}
               className="flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-[#20a85a] px-5 text-lg font-black text-white shadow-lg shadow-green-900/10"
               whileTap={{ scale: 0.98 }}
             >
@@ -997,7 +1404,13 @@ function PreviewView({
   );
 }
 
-function PaywallModal({ onClose }: { onClose: () => void }) {
+function PaywallModal({
+  onClose,
+  onChoosePlan,
+}: {
+  onClose: () => void;
+  onChoosePlan: (planId: Exclude<PlanId, "none">) => void;
+}) {
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/55 px-4 pb-4 backdrop-blur-sm sm:items-center sm:pb-0"
@@ -1063,13 +1476,20 @@ function PaywallModal({ onClose }: { onClose: () => void }) {
 
         <motion.button
           type="button"
-          onClick={() => alert("Redirect naar Stripe/Bancontact")}
+          onClick={() => onChoosePlan("monthly")}
           className="mt-5 flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-[#20a85a] px-5 text-lg font-black text-white shadow-lg shadow-green-900/10"
           whileTap={{ scale: 0.98 }}
         >
-          Start mijn abonnement
+          Start maandelijks
           <ArrowRight aria-hidden="true" size={23} />
         </motion.button>
+        <button
+          type="button"
+          onClick={() => onChoosePlan("yearly")}
+          className="mt-3 min-h-12 w-full rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-black text-zinc-700"
+        >
+          Jaarplan met 20% korting
+        </button>
         <button
           type="button"
           onClick={onClose}
