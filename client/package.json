@@ -3,6 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "cd .. && npm ci && npm run build && node scripts/sync-client-dist.mjs"
+    "build": "node ../scripts/build-client-compat.mjs"
   }
 }

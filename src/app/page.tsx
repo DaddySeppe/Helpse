@@ -18,7 +18,9 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { type ReactNode, useMemo, useState } from "react";
+import { type Session } from "@supabase/supabase-js";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 type AppView =
   | "landing"
@@ -57,6 +59,11 @@ function toNumber(value: string) {
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>("landing");
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(!isSupabaseConfigured);
+  const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
+  const [authMessage, setAuthMessage] = useState("");
+  const [authError, setAuthError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [customerName, setCustomerName] = useState("Jan Peeters");
@@ -85,9 +92,117 @@ export default function Home() {
     };
   }, [materials, hours, hourlyRate]);
 
-  function submitAuth() {
-    // Dummy-auth: echte login en registratie volgen later.
-    setCurrentView("dashboard");
+  useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) {
+        return;
+      }
+
+      setSession(data.session);
+      if (data.session) {
+        setEmail(data.session.user.email ?? "");
+        setCurrentView("dashboard");
+      }
+      setIsAuthReady(true);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setEmail(nextSession?.user.email ?? "");
+
+      if (nextSession) {
+        setCurrentView((view) =>
+          view === "landing" || view === "auth-login" || view === "auth-register"
+            ? "dashboard"
+            : view,
+        );
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function submitAuth(mode: "login" | "register") {
+    setAuthError("");
+    setAuthMessage("");
+
+    if (!supabase) {
+      setAuthError(
+        "Supabase is nog niet gekoppeld. Zet eerst je NEXT_PUBLIC_SUPABASE_URL en NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      );
+      return;
+    }
+
+    if (!email || !password) {
+      setAuthError("Vul je e-mail en wachtwoord in.");
+      return;
+    }
+
+    setIsSubmittingAuth(true);
+
+    try {
+      if (mode === "register") {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+          },
+        });
+
+        if (error) {
+          setAuthError(error.message);
+          return;
+        }
+
+        if (data.session) {
+          setSession(data.session);
+          setCurrentView("dashboard");
+          return;
+        }
+
+        setAuthMessage(
+          "Account aangemaakt. Check je mailbox om je e-mailadres te bevestigen.",
+        );
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setAuthError(error.message);
+        return;
+      }
+
+      setSession(data.session);
+      setCurrentView("dashboard");
+    } finally {
+      setIsSubmittingAuth(false);
+    }
+  }
+
+  async function logout() {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+
+    setSession(null);
+    setPassword("");
+    setCurrentView("landing");
   }
 
   function startRecording() {
@@ -144,12 +259,13 @@ export default function Home() {
             currentView === "recording"
           }
           isLoggedIn={
+            Boolean(session) &&
             currentView !== "landing" &&
             currentView !== "auth-login" &&
             currentView !== "auth-register"
           }
-          onLogoClick={() => setCurrentView("landing")}
-          onLogout={() => setCurrentView("landing")}
+          onLogoClick={() => setCurrentView(session ? "dashboard" : "landing")}
+          onLogout={logout}
         />
 
         <AnimatePresence mode="wait">
@@ -166,14 +282,23 @@ export default function Home() {
               mode={currentView === "auth-login" ? "login" : "register"}
               email={email}
               password={password}
+              isConfigured={isSupabaseConfigured}
+              isAuthReady={isAuthReady}
+              isSubmitting={isSubmittingAuth}
+              message={authMessage}
+              error={authError}
               onEmailChange={setEmail}
               onPasswordChange={setPassword}
-              onSubmit={submitAuth}
-              onSwitchMode={() =>
+              onSubmit={() =>
+                submitAuth(currentView === "auth-login" ? "login" : "register")
+              }
+              onSwitchMode={() => {
+                setAuthError("");
+                setAuthMessage("");
                 setCurrentView(
                   currentView === "auth-login" ? "auth-register" : "auth-login",
-                )
-              }
+                );
+              }}
             />
           )}
 
@@ -425,6 +550,11 @@ function AuthView({
   mode,
   email,
   password,
+  isConfigured,
+  isAuthReady,
+  isSubmitting,
+  message,
+  error,
   onEmailChange,
   onPasswordChange,
   onSubmit,
@@ -433,6 +563,11 @@ function AuthView({
   mode: "login" | "register";
   email: string;
   password: string;
+  isConfigured: boolean;
+  isAuthReady: boolean;
+  isSubmitting: boolean;
+  message: string;
+  error: string;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: () => void;
@@ -457,9 +592,29 @@ function AuthView({
           {isLogin ? "Log in op Helpse." : "Maak je account aan."}
         </h1>
         <p className="mt-2 text-base font-semibold leading-6 text-zinc-600">
-          Dummy login voor de MVP. Klik op Ga verder om naar het dashboard te
-          gaan.
+          {isLogin
+            ? "Log in met je echte Helpse-account."
+            : "Registreer met e-mail en wachtwoord. Supabase bewaart je login veilig."}
         </p>
+
+        {!isConfigured && (
+          <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-bold leading-5 text-orange-900">
+            Supabase is nog niet gekoppeld. Zet eerst de publieke env-vars in
+            `.env.local`.
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold leading-5 text-red-800">
+            {error}
+          </div>
+        )}
+
+        {message && (
+          <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold leading-5 text-green-800">
+            {message}
+          </div>
+        )}
 
         <form
           className="mt-6 space-y-4"
@@ -485,11 +640,21 @@ function AuthView({
 
           <motion.button
             type="submit"
-            className="flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-[#f47b20] px-5 text-lg font-black text-white shadow-lg shadow-orange-900/10"
+            disabled={!isConfigured || !isAuthReady || isSubmitting}
+            className="flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-[#f47b20] px-5 text-lg font-black text-white shadow-lg shadow-orange-900/10 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-600 disabled:shadow-none"
             whileTap={{ scale: 0.98 }}
           >
-            Ga verder
-            <ArrowRight aria-hidden="true" size={23} />
+            {isSubmitting ? (
+              <>
+                <Loader2 aria-hidden="true" className="animate-spin" size={23} />
+                Even bezig
+              </>
+            ) : (
+              <>
+                Ga verder
+                <ArrowRight aria-hidden="true" size={23} />
+              </>
+            )}
           </motion.button>
         </form>
 
