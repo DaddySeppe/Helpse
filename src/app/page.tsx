@@ -342,7 +342,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f3ed] text-zinc-900 [background-image:linear-gradient(rgba(24,24,27,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
+    <main className="min-h-screen bg-[#f7f4ee] text-zinc-900">
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
         <Header
           compact={
@@ -562,7 +562,7 @@ function AppNav({
             onClick={() => onNavigate(item.view)}
             className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-[1rem] px-2 text-xs font-black transition sm:flex-row sm:text-sm ${
               isActive
-                ? "bg-zinc-950 text-white shadow-md shadow-zinc-900/15"
+                ? "bg-[#f47b20] text-white shadow-md shadow-orange-900/15"
                 : "text-zinc-600 hover:bg-[#f6f3ed] hover:text-zinc-950"
             }`}
           >
@@ -671,17 +671,17 @@ function DemoPanel() {
         </div>
         <span className="text-xs font-black text-zinc-500">live preview</span>
       </div>
-      <div className="rounded-[1.35rem] bg-zinc-950 p-4 text-white">
+      <div className="rounded-[1.35rem] border border-orange-100 bg-[#fff7ed] p-4 text-zinc-950">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-black text-orange-200">Demo offerte</p>
+            <p className="text-sm font-black text-[#c35f14]">Demo offerte</p>
             <p className="text-xl font-black">Kraan vervangen</p>
           </div>
-          <div className="rounded-full bg-[#20a85a] px-3 py-2 text-xs font-black">
+          <div className="rounded-full bg-[#20a85a] px-3 py-2 text-xs font-black text-white">
             Klaar
           </div>
         </div>
-        <div className="space-y-2 rounded-[1rem] bg-white/10 p-3">
+        <div className="space-y-2 rounded-[1rem] border border-orange-100 bg-white p-3 shadow-sm">
           <DemoLine label="Klant" value="Jan Peeters" />
           <DemoLine label="Materiaal" value="€ 200,50" />
           <DemoLine label="Werkuren" value="3 u" />
@@ -738,7 +738,7 @@ function DemoLine({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-sm font-bold text-zinc-300">{label}</span>
+      <span className="text-sm font-bold text-zinc-500">{label}</span>
       <span className={`text-right font-black ${strong ? "text-xl" : ""}`}>
         {value}
       </span>
@@ -925,24 +925,24 @@ function AccountView({
           <button
             type="button"
             onClick={onLogout}
-            className="flex min-h-14 w-full items-center justify-center rounded-2xl bg-zinc-950 px-4 text-base font-black text-white shadow-sm"
+            className="flex min-h-14 w-full items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 text-base font-black text-zinc-800 shadow-sm transition hover:bg-zinc-50"
           >
             Uitloggen
           </button>
         </Section>
 
         <Section title="Abonnement">
-          <div className="rounded-3xl bg-zinc-950 p-5 text-white">
+          <div className="rounded-[1.25rem] border border-orange-100 bg-[#fff7ed] p-5 text-zinc-950 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-black text-orange-200">Status</p>
+                <p className="text-sm font-black text-[#c35f14]">Status</p>
                 <p className="mt-1 text-2xl font-black">{planLabel}</p>
               </div>
               {activePlan !== "none" && (
                 <BadgeCheck aria-hidden="true" className="text-[#20a85a]" />
               )}
             </div>
-            <p className="mt-4 text-sm font-semibold leading-6 text-zinc-300">
+            <p className="mt-4 text-sm font-semibold leading-6 text-zinc-600">
               {activePlan === "none"
                 ? "Kies Pro om offertes te exporteren en via WhatsApp klaar te zetten."
                 : "Je Pro-functies zijn actief in deze MVP-simulatie."}
@@ -1066,7 +1066,7 @@ function PlanCard({
         className={`mt-5 flex min-h-14 w-full items-center justify-center gap-2 rounded-[1rem] px-4 text-base font-black shadow-sm transition ${
           isActive
             ? "bg-[#20a85a] text-white"
-            : "bg-zinc-950 text-white"
+            : "bg-[#f47b20] text-white shadow-orange-900/10"
         }`}
       >
         <CreditCard aria-hidden="true" size={21} />
@@ -1164,7 +1164,7 @@ function DashboardView({
           <motion.button
             type="button"
             onClick={onStop}
-            className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-zinc-950 px-7 text-lg font-black text-white shadow-md"
+            className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#f47b20] px-7 text-lg font-black text-white shadow-md shadow-orange-900/10"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             whileTap={{ scale: 0.98 }}
@@ -1181,7 +1181,7 @@ function DashboardView({
               <button
                 type="button"
                 onClick={onOpenBilling}
-                className="min-h-12 rounded-full bg-zinc-950 px-5 text-sm font-black text-white shadow-sm"
+                className="min-h-12 rounded-full bg-[#f47b20] px-5 text-sm font-black text-white shadow-sm shadow-orange-900/10"
               >
                 Upgrade voor export en WhatsApp
               </button>
@@ -1329,7 +1329,7 @@ function PreviewView({
             <button
               type="button"
               onClick={onAddMaterial}
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-zinc-950 px-4 text-sm font-black text-white"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#f47b20] px-4 text-sm font-black text-white shadow-sm shadow-orange-900/10"
             >
               <Plus aria-hidden="true" size={18} />
               Voeg toe
@@ -1393,12 +1393,12 @@ function PreviewView({
           <LineTotal label="Werkuren totaal" value={totals.laborTotal} />
         </Section>
 
-        <section className="rounded-3xl bg-zinc-950 p-5 text-white shadow-xl shadow-zinc-900/10">
+        <section className="rounded-[1.4rem] border border-orange-100 bg-[#fff7ed] p-5 text-zinc-950 shadow-lg shadow-zinc-900/5">
           <h2 className="mb-4 text-xl font-black">Totaalbedrag</h2>
           <div className="space-y-3">
             <SummaryRow label="Excl. 21% BTW" value={totals.subtotal} />
             <SummaryRow label="BTW 21%" value={totals.vat} subtle />
-            <div className="h-px bg-white/20" />
+            <div className="h-px bg-orange-200" />
             <SummaryRow label="Incl. 21% BTW" value={totals.total} large />
           </div>
         </section>
@@ -1408,7 +1408,7 @@ function PreviewView({
             <motion.button
               type="button"
               onClick={() => onQuoteAction("pdf")}
-              className="flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-zinc-950 px-5 text-lg font-black text-white shadow-lg"
+              className="flex min-h-16 items-center justify-center gap-3 rounded-2xl border border-zinc-200 bg-white px-5 text-lg font-black text-zinc-950 shadow-lg shadow-zinc-900/5"
               whileTap={{ scale: 0.98 }}
             >
               <FileDown aria-hidden="true" size={24} />
@@ -1482,15 +1482,15 @@ function PaywallModal({
           klanten.
         </p>
 
-        <div className="mt-5 rounded-3xl bg-zinc-950 p-5 text-white">
+        <div className="mt-5 rounded-[1.25rem] border border-orange-100 bg-[#fff7ed] p-5 text-zinc-950">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-black text-orange-200">Onbeperkt</p>
+              <p className="text-sm font-black text-[#c35f14]">Onbeperkt</p>
               <p className="text-lg font-black">Helpse Pro</p>
             </div>
             <p className="text-4xl font-black">
               €19
-              <span className="text-base font-black text-zinc-300">/maand</span>
+              <span className="text-base font-black text-zinc-600">/maand</span>
             </p>
           </div>
           <div className="mt-4 space-y-2">
@@ -1530,7 +1530,7 @@ function PaywallModal({
 
 function PlanFeature({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-2 text-sm font-bold text-zinc-200">
+    <div className="flex items-center gap-2 text-sm font-bold text-zinc-700">
       <Check aria-hidden="true" className="text-[#20a85a]" size={18} />
       {children}
     </div>
@@ -1638,12 +1638,14 @@ function SummaryRow({
     <div className="flex items-baseline justify-between gap-4">
       <span
         className={`font-black ${large ? "text-lg" : "text-base"} ${
-          subtle ? "text-zinc-300" : "text-white"
+          subtle ? "text-zinc-500" : "text-zinc-700"
         }`}
       >
         {label}
       </span>
-      <span className={`font-black ${large ? "text-3xl" : "text-xl"}`}>
+      <span
+        className={`font-black text-zinc-950 ${large ? "text-3xl" : "text-xl"}`}
+      >
         {formatCurrency(value)}
       </span>
     </div>
