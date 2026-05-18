@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-const fallbackSupabaseUrl = "https://wjwgovjmksglakopjbie.supabase.co";
+const fallbackSupabaseUrl = "https://wjwgowjmksglakopjbie.supabase.co";
 const fallbackSupabasePublishableKey =
   "sb_publishable_K-uxyYphqtjZ1iniOVCtvg_jBlvflXj";
 
@@ -20,3 +20,4 @@ export const supabase =
   supabaseUrl && supabasePublishableKey
     ? createClient(supabaseUrl, supabasePublishableKey)
   : null;
+
